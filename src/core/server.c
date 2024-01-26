@@ -1,4 +1,6 @@
 #include "server.h"
+#include "common.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,17 +9,6 @@
 
 #include <sys/socket.h>
 #include <netinet/in.h>
-
-#define ALWAYS 1
-#define BACKLOG_QUEUE 10
-#define INCOMMING_BUFFER_LENGTH 2048
-#define HOST_NAME_LENGTH 64
-
-#define handle_error(msg) \
-    do { perror(msg); exit(EXIT_FAILURE); } while (0);
-
-
-#define LOG
 
 struct HttpServer
 {
