@@ -23,7 +23,7 @@ struct Client
     // Logging stuff
     struct {
         char host_name[REMOTE_HOST_BUFFER_SIZE];
-        char addr_name[REMOTE_ADDR_BUFFER_SIZE];
+        char addr[REMOTE_ADDR_BUFFER_SIZE];
         uint32_t port;
     } base;
 
@@ -53,7 +53,7 @@ struct Client* create_client(char * remote_host, uint32_t port)
     }
 
     strcpy(instance->base.host_name, host_entry->h_name);
-    strcpy(instance->base.addr_name, inet_ntoa(*(struct in_addr*)host_entry->h_addr));
+    strcpy(instance->base.addr, inet_ntoa(*(struct in_addr*)host_entry->h_addr));
     instance->base.port = port;
 
 
@@ -79,44 +79,44 @@ void release_client(struct Client * client)
 
 void ping_request(struct Client * client)
 {
-// #ifdef LOG
-//     printf("Creating socket for connecting to remote host...\n");
-// #endif
+#ifdef LOG
+    printf("Creating socket for connecting to remote host...\n");
+#endif
 
-//     int32_t sock_descr = socket(AF_INET, SOCK_STREAM, 0);
-//     if (sock_descr == -1) {
-//         handle_error("sock descr")
-//     }
+    int32_t sock_descr = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock_descr == -1) {
+        handle_error("sock descr")
+    }
 
-// #ifdef LOG
-//     printf("Success. Socket descriptor %d\n", sock_descr);
-// #endif
+#ifdef LOG
+    printf("Success. Socket descriptor %d\n", sock_descr);
+#endif
 
-//     struct sockaddr_in remote_addr;
-//     remote_addr.sin_family = AF_INET;
-//     remote_addr.sin_port = client->remote_host_port;
+    struct sockaddr_in remote_addr;
+    remote_addr.sin_family = AF_INET;
+    remote_addr.sin_port = client->binary.port;
 
-// #ifdef LOG
-//     printf("Resolving remote host %s:%d\n", client->remote_host, ntohl(client->remote_host_port));
-// #endif
+#ifdef LOG
+    printf("Resolving remote host %s[%s]:%d\n", client->base.host_name, client->base.addr, client->base.port);
+#endif
 
-//     if (inet_pton(AF_INET, client->remote_host, &remote_addr.sin_addr) <= 0) {
-//         handle_error("host trans");
-//     }
+    if (inet_pton(AF_INET, client->base.addr, &remote_addr.sin_addr) <= 0) {
+        handle_error("host trans");
+    }
 
-// #ifdef LOG
-//     printf("Success. Trying to connect to remote host\n");
-// #endif
+#ifdef LOG
+    printf("Success. Trying to connect to remote host\n");
+#endif
 
-//     if (connect(sock_descr, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) == -1) {
-//         handle_error("connection");
-//     }
+    if (connect(sock_descr, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) == -1) {
+        handle_error("connection");
+    }
 
-//     const char ping_buffer[] = "PING";
+    const char ping_buffer[] = "PING";
 
-// #ifdef LOG
-//     printf("Success. Send \"PING\" message\n");
-// #endif
+#ifdef LOG
+    printf("Success. Send \"PING\" message\n");
+#endif
 
-//     send(sock_descr, ping_buffer, strlen(ping_buffer), MSG_CONFIRM);
+    send(sock_descr, ping_buffer, strlen(ping_buffer), MSG_CONFIRM);
 }
