@@ -4,33 +4,68 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <netdb.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
 #define LOG
+
 #define REMOTE_HOST_BUFFER_SIZE 64
+#define REMOTE_ADDR_BUFFER_SIZE 16
 
 #define handle_error(msg) \
     do { perror(msg); exit(EXIT_FAILURE); } while (0);
 
 struct Client
 {
-    char remote_host[REMOTE_HOST_BUFFER_SIZE];
-    uint32_t remote_host_port;
+    // Logging stuff
+    struct {
+        char host_name[REMOTE_HOST_BUFFER_SIZE];
+        char addr_name[REMOTE_ADDR_BUFFER_SIZE];
+        uint32_t port;
+    } base;
+
+    // Network stuff
+    struct {
+        struct in_addr ** addr_list;
+        uint32_t port;
+    } binary;
 };
 
 struct Client* create_client(char * remote_host, uint32_t port) 
 {
+    if (!remote_host) {
+        handle_error("Cannot create client without provided host token");
+    }
+
     struct Client * instance = (struct Client *)malloc(sizeof(struct Client));
 
     if (!instance) {
-        handle_error("client alloc");
+        handle_error("Cannot allocate memory for client instance");
     }
-    strcpy(instance->remote_host, remote_host);
-    instance->remote_host_port = htonl(port);
 
+    const struct hostent * host_entry = gethostbyname(remote_host);
+
+    if (!host_entry) {
+        handle_error("host resolution");
+    }
+
+    strcpy(instance->base.host_name, host_entry->h_name);
+    strcpy(instance->base.addr_name, inet_ntoa(*(struct in_addr*)host_entry->h_addr));
+    instance->base.port = port;
+
+    struct in_addr ** addr_list_fwd = (struct in_addr **)host_entry->h_addr_list;
+
+    while (*addr_list_fwd) {
+        struct in_addr * next_addr = (struct in_addr*) malloc(sizeof(struct in_addr));
+        memcpy((char*) next_addr, ((char*)(*addr_list_fwd)), sizeof(struct in_addr));
+
+        *addr_list_fwd++;
+    }
+
+    instance->binary.port = htonl(port);
     return instance;
 }
 
@@ -44,44 +79,44 @@ void release_client(struct Client * client)
 
 void ping_request(struct Client * client)
 {
-#ifdef LOG
-    printf("Creating socket for connecting to remote host...\n");
-#endif
+// #ifdef LOG
+//     printf("Creating socket for connecting to remote host...\n");
+// #endif
 
-    int32_t sock_descr = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock_descr == -1) {
-        handle_error("sock descr")
-    }
+//     int32_t sock_descr = socket(AF_INET, SOCK_STREAM, 0);
+//     if (sock_descr == -1) {
+//         handle_error("sock descr")
+//     }
 
-#ifdef LOG
-    printf("Success. Socket descriptor %d\n", sock_descr);
-#endif
+// #ifdef LOG
+//     printf("Success. Socket descriptor %d\n", sock_descr);
+// #endif
 
-    struct sockaddr_in remote_addr;
-    remote_addr.sin_family = AF_INET;
-    remote_addr.sin_port = client->remote_host_port;
+//     struct sockaddr_in remote_addr;
+//     remote_addr.sin_family = AF_INET;
+//     remote_addr.sin_port = client->remote_host_port;
 
-#ifdef LOG
-    printf("Resolving remote host %s:%d\n", client->remote_host, ntohl(client->remote_host_port));
-#endif
+// #ifdef LOG
+//     printf("Resolving remote host %s:%d\n", client->remote_host, ntohl(client->remote_host_port));
+// #endif
 
-    if (inet_pton(AF_INET, client->remote_host, &remote_addr.sin_addr) <= 0) {
-        handle_error("host trans");
-    }
+//     if (inet_pton(AF_INET, client->remote_host, &remote_addr.sin_addr) <= 0) {
+//         handle_error("host trans");
+//     }
 
-#ifdef LOG
-    printf("Success. Trying to connect to remote host\n");
-#endif
+// #ifdef LOG
+//     printf("Success. Trying to connect to remote host\n");
+// #endif
 
-    if (connect(sock_descr, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) == -1) {
-        handle_error("connection");
-    }
+//     if (connect(sock_descr, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) == -1) {
+//         handle_error("connection");
+//     }
 
-    const char ping_buffer[] = "PING";
+//     const char ping_buffer[] = "PING";
 
-#ifdef LOG
-    printf("Success. Send \"PING\" message\n");
-#endif
+// #ifdef LOG
+//     printf("Success. Send \"PING\" message\n");
+// #endif
 
-    send(sock_descr, ping_buffer, strlen(ping_buffer), MSG_CONFIRM);
+//     send(sock_descr, ping_buffer, strlen(ping_buffer), MSG_CONFIRM);
 }
