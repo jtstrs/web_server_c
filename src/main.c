@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include "core/server.h"
 
-#define LOG
 
 int32_t main(int32_t argc, char const *argv[])
 {

@@ -1,8 +1,9 @@
 #include "server.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
-#include "errno.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <unistd.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -43,11 +44,6 @@ void releaseServer(struct HttpServer * server) {
 }
 
 void start(struct HttpServer * server) {
-    if (server->host_name == NULL) {
-        handle_error("Hostname is null. Unable to start listening");
-        return;
-    }
-
     const int32_t inc_sock_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 #ifdef LOG
@@ -74,7 +70,7 @@ void start(struct HttpServer * server) {
 
 
 #ifdef LOG
-    printf("Start listening...\n");
+    printf("Start listening on %d port...\n", server->port);
 #endif
     if (listen(inc_sock_descr, BACKLOG_QUEUE) == -1) {
         handle_error("listen");
@@ -83,13 +79,24 @@ void start(struct HttpServer * server) {
     while (ALWAYS) {
         struct sockaddr_in peer_addr;
         socklen_t peer_addr_size;
+        memset((char*)&peer_addr, sizeof(peer_addr), 0);
+
         const int32_t conn_sock_desc = accept(inc_sock_descr, (struct sockaddr*)&peer_addr, &peer_addr_size);
         if (conn_sock_desc == -1) {
             handle_error("csocket");
         }
 
+        printf("Accepted new connection from host %d\n", ntohs(peer_addr.sin_port));
+
         char buffer[INCOMMING_BUFFER_LENGTH];
-        recv(conn_sock_desc, buffer, INCOMMING_BUFFER_LENGTH, MSG_WAITALL);
-        printf("Received message\n %s", buffer);
+        memset(buffer, 0, INCOMMING_BUFFER_LENGTH);
+
+        if (read(conn_sock_desc, buffer, INCOMMING_BUFFER_LENGTH) == -1) {
+            handle_error("read data");
+        }
+
+        printf("Received message %s\n", buffer);
+
+        close(conn_sock_desc);
     }
 }
