@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define LOG
+#define DEBUG
 
 #define REMOTE_HOST_BUFFER_SIZE 64
 #define REMOTE_ADDR_BUFFER_SIZE 16
@@ -60,7 +60,15 @@ struct Client* create_client(char * remote_host, uint32_t port)
     instance->binary.addr = (struct in_addr*) malloc(sizeof(struct in_addr));
     memcpy(instance->binary.addr, ((char*)((struct in_addr*)host_entry->h_addr)), sizeof(struct in_addr));
 
-    instance->binary.port = htonl(port);
+    instance->binary.port = htons(port);
+
+#ifdef DEBUG
+    printf("Client instance was created\n");
+    printf("[HOST INFO]\nHost: %s\nHost addr: %s\nHost port: %d\n", instance->base.host_name,
+                                                                    instance->base.addr,
+                                                                    instance->base.port);
+    printf("[INTERNET INFO]\nHost port: %d\n", instance->binary.port);
+#endif
 
     return instance;
 }
@@ -79,7 +87,7 @@ void release_client(struct Client * client)
 
 void ping_request(struct Client * client)
 {
-#ifdef LOG
+#ifdef DEBUG
     printf("Creating socket for connecting to remote host...\n");
 #endif
 
@@ -88,7 +96,7 @@ void ping_request(struct Client * client)
         handle_error("sock descr")
     }
 
-#ifdef LOG
+#ifdef DEBUG
     printf("Success. Socket descriptor %d\n", sock_descr);
 #endif
 
@@ -96,7 +104,7 @@ void ping_request(struct Client * client)
     remote_addr.sin_family = AF_INET;
     remote_addr.sin_port = client->binary.port;
 
-#ifdef LOG
+#ifdef DEBUG
     printf("Resolving remote host %s[%s]:%d\n", client->base.host_name, client->base.addr, client->base.port);
 #endif
 
@@ -104,7 +112,7 @@ void ping_request(struct Client * client)
         handle_error("host trans");
     }
 
-#ifdef LOG
+#ifdef DEBUG
     printf("Success. Trying to connect to remote host\n");
 #endif
 
@@ -114,7 +122,7 @@ void ping_request(struct Client * client)
 
     const char ping_buffer[] = "PING";
 
-#ifdef LOG
+#ifdef DEBUG
     printf("Success. Send \"PING\" message\n");
 #endif
 
