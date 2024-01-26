@@ -29,7 +29,7 @@ struct Client
 
     // Network stuff
     struct {
-        struct in_addr ** addr_list;
+        struct in_addr * addr;
         uint32_t port;
     } binary;
 };
@@ -56,16 +56,12 @@ struct Client* create_client(char * remote_host, uint32_t port)
     strcpy(instance->base.addr_name, inet_ntoa(*(struct in_addr*)host_entry->h_addr));
     instance->base.port = port;
 
-    struct in_addr ** addr_list_fwd = (struct in_addr **)host_entry->h_addr_list;
 
-    while (*addr_list_fwd) {
-        struct in_addr * next_addr = (struct in_addr*) malloc(sizeof(struct in_addr));
-        memcpy((char*) next_addr, ((char*)(*addr_list_fwd)), sizeof(struct in_addr));
-
-        *addr_list_fwd++;
-    }
+    instance->binary.addr = (struct in_addr*) malloc(sizeof(struct in_addr));
+    memcpy(instance->binary.addr, ((char*)((struct in_addr*)host_entry->h_addr)), sizeof(struct in_addr));
 
     instance->binary.port = htonl(port);
+
     return instance;
 }
 
@@ -73,6 +69,10 @@ void release_client(struct Client * client)
 {
     if (!client) {
         return;
+    }
+
+    if (client->binary.addr) {
+        free(client->binary.addr);
     }
     free(client);
 }
