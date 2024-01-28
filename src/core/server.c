@@ -89,7 +89,7 @@ void initServer(struct HttpServer *server) {
 
 int32_t accept_pending_connection(int32_t accept_sock_descr) {
     struct sockaddr_in peer_addr;
-    socklen_t peer_addr_size;
+    socklen_t peer_addr_size = sizeof(struct sockaddr_in);
     memset((char *) &peer_addr, sizeof(peer_addr), 0);
 
     const int32_t peer_sock = accept(accept_sock_descr, (struct sockaddr *) &peer_addr, &peer_addr_size);
