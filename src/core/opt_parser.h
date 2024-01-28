@@ -7,6 +7,6 @@ struct Options {
     uint32_t port;
 };
 
-struct Options * parse_opts(int32_t argc, char * argv[]);
+struct Options *parse_opts(int32_t argc, char *argv[]);
 
 #endif

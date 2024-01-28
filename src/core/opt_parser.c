@@ -1,30 +1,26 @@
 #include "opt_parser.h"
 #include "common.h"
 
-#include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include <string.h>
 
-void print_help()
-{
-
+void print_help() {
 }
 
-int32_t parse_int32(char * token) 
-{
+int32_t parse_int32(char *token) {
     if (!token) {
         return -1;
     }
 
-    char * endptr;
+    char *endptr;
 
     int32_t value = (int32_t) strtoul(token, &endptr, 10);
 
-    if (endptr == token)
-    {
-        return -1;   
+    if (endptr == token) {
+        return -1;
     }
 
     if (value < 0 || value >= UINT32_MAX) {
@@ -34,8 +30,7 @@ int32_t parse_int32(char * token)
     return value;
 }
 
-union OptValue
-{
+union OptValue {
     int32_t iv;
 };
 
@@ -44,15 +39,13 @@ enum OptField {
     Unknown
 };
 
-enum ParseStage 
-{
+enum ParseStage {
     WaitForDecl,
     WaitForValue,
     Interrupt
 };
 
-enum OptField parse_opt_field(char * token)
-{
+enum OptField parse_opt_field(char *token) {
     if (!strcmp("-p", token) || !strcmp("--port", token)) {
         return Port;
     } else {
@@ -60,43 +53,39 @@ enum OptField parse_opt_field(char * token)
     }
 }
 
-union OptValue parse_opt_value(char * token, enum OptField field, bool* ok)
-{
+union OptValue parse_opt_value(char *token, enum OptField field, bool *ok) {
     union OptValue val;
 
-    switch (field)
-    {
-    case Port:
-        int32_t port_val = parse_int32(token);
-        if (port_val == -1) {
-            *ok = false;
-        } else {
-            val.iv = port_val;
-        }
-        break;
-    default:
-        // Never should happen
-        exit(EXIT_FAILURE);
-        break;
+    switch (field) {
+        case Port:
+            int32_t port_val = parse_int32(token);
+            if (port_val == -1) {
+                *ok = false;
+            } else {
+                val.iv = port_val;
+            }
+            break;
+        default:
+            // Never should happen
+            exit(EXIT_FAILURE);
+            break;
     }
     return val;
 }
 
-void assign_option(struct Options * opts, enum OptField opt, union OptValue val)
-{
+void assign_option(struct Options *opts, enum OptField opt, union OptValue val) {
     switch (opt) {
         case Port:
             opts->port = val.iv;
-        break;
+            break;
         case Unknown:
         default:
-            // Never should happen 
+            // Never should happen
             exit(EXIT_FAILURE);
     }
 }
 
-char * opt_field_to_str(enum OptField opt)
-{
+char *opt_field_to_str(enum OptField opt) {
     switch (opt) {
         case Port:
             return "Port";
@@ -108,14 +97,13 @@ char * opt_field_to_str(enum OptField opt)
     };
 }
 
-struct Options * parse_opts(int32_t argc, char *argv[]) 
-{
+struct Options *parse_opts(int32_t argc, char *argv[]) {
     if (argc <= 1) {
         printf("Too small arguments count. Write --help to see available options.\n");
         exit(0);
     }
 
-    char ** opt_token = &argv[1];
+    char **opt_token = &argv[1];
 
     static struct Options opts;
     opts.port = 0;
@@ -125,14 +113,13 @@ struct Options * parse_opts(int32_t argc, char *argv[])
 
     union OptValue val;
     val.iv = 0;
-    
-    while (*opt_token != NULL) 
-    {
+
+    while (*opt_token != NULL) {
         switch (stage) {
             case WaitForDecl:
                 opt = parse_opt_field(*opt_token);
                 stage = WaitForValue;
-            break;
+                break;
             case WaitForValue:
                 bool val_parse_suc = true;
                 val = parse_opt_value(*opt_token, opt, &val_parse_suc);
@@ -142,13 +129,13 @@ struct Options * parse_opts(int32_t argc, char *argv[])
                 }
                 assign_option(&opts, opt, val);
                 stage = WaitForDecl;
-            break;
+                break;
             case Interrupt:
-            break;
+                break;
             default:
-            // Never should happen
-            exit(EXIT_FAILURE);
-            break;
+                // Never should happen
+                exit(EXIT_FAILURE);
+                break;
         }
 
         *opt_token++;
