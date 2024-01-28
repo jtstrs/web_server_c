@@ -126,8 +126,6 @@ struct Options * parse_opts(int32_t argc, char *argv[])
     union OptValue val;
     val.iv = 0;
     
-    bool val_parse_suc = true;
-
     while (*opt_token != NULL) 
     {
         switch (stage) {
@@ -136,6 +134,7 @@ struct Options * parse_opts(int32_t argc, char *argv[])
                 stage = WaitForValue;
             break;
             case WaitForValue:
+                bool val_parse_suc = true;
                 val = parse_opt_value(*opt_token, opt, &val_parse_suc);
                 if (!val_parse_suc) {
                     stage = Interrupt;
@@ -155,7 +154,7 @@ struct Options * parse_opts(int32_t argc, char *argv[])
         *opt_token++;
     }
 
-    if (stage == Interrupt || stage == WaitForValue || !val_parse_suc) {
+    if (stage == Interrupt || stage == WaitForValue) {
         printf("Value for %s option wasnt provied. Abort.", opt_field_to_str(opt));
         exit(EXIT_FAILURE);
     }
