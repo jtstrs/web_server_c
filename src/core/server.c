@@ -14,7 +14,7 @@
 struct HttpServer {
     char host_name[HOST_NAME_LENGTH];
     int32_t port;
-    int32_t conn_sock_descr;
+    int32_t ac_sock;
 };
 
 
@@ -23,7 +23,7 @@ struct HttpServer *createServer(char *host, int32_t port) {
 
     strcpy(instance->host_name, host);
     instance->port = port;
-    instance->conn_sock_descr = INVALID_DESCRIPTOR;
+    instance->ac_sock = INVALID_DESCRIPTOR;
 
     return instance;
 }
@@ -45,7 +45,7 @@ void releaseServer(struct HttpServer *server) {
     if (!server) {
         return;
     }
-    releaseSocket(server->conn_sock_descr);
+    releaseSocket(server->ac_sock);
     free(server);
 }
 
@@ -82,7 +82,7 @@ void initServer(struct HttpServer *server) {
         handle_error("listen");
     }
 
-    server->conn_sock_descr = sock_descr;
+    server->ac_sock = sock_descr;
 }
 
 void start(struct HttpServer *server) {
@@ -91,7 +91,7 @@ void start(struct HttpServer *server) {
         socklen_t peer_addr_size;
         memset((char *) &peer_addr, sizeof(peer_addr), 0);
 
-        const int32_t conn_sock_desc = accept(server->conn_sock_descr, (struct sockaddr *) &peer_addr, &peer_addr_size);
+        const int32_t conn_sock_desc = accept(server->ac_sock, (struct sockaddr *) &peer_addr, &peer_addr_size);
         if (conn_sock_desc == -1) {
             handle_error("csocket");
         }
