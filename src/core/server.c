@@ -130,7 +130,7 @@ void handle_pending_request(struct HttpServer *server) {
         strcat(request_buffer, chunk);
     } while (bytes_read != 0);
 
-    printf("Received message %s\n", request_buffer);
 
+    printf("Message content \n%s\n", request_buffer);
     close(peer_sock);
 }
