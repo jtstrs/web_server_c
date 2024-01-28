@@ -10,6 +10,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+#define REQ_CHUNK_SIZE 256
+
 
 struct HttpServer {
     char host_name[HOST_NAME_LENGTH];
@@ -52,7 +54,7 @@ void releaseServer(struct HttpServer *server) {
 void initServer(struct HttpServer *server) {
     const int32_t sock_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-#ifdef LOG
+#ifdef DEBUG
     printf("Create listening socket...\n");
 #endif
 
@@ -66,7 +68,7 @@ void initServer(struct HttpServer *server) {
     serv_addr.sin_port = htons(server->port);
     serv_addr.sin_family = AF_INET;
 
-#ifdef LOG
+#ifdef DEBUG
     printf("Bindning listening socket...\n");
 #endif
 
@@ -75,7 +77,7 @@ void initServer(struct HttpServer *server) {
     }
 
 
-#ifdef LOG
+#ifdef DEBUG
     printf("Start listening on %d port...\n", server->port);
 #endif
     if (listen(sock_descr, BACKLOG_QUEUE) == ERROR_STATUS) {
@@ -85,28 +87,50 @@ void initServer(struct HttpServer *server) {
     server->ac_sock = sock_descr;
 }
 
-void start(struct HttpServer *server) {
-    while (ALWAYS) {
-        struct sockaddr_in peer_addr;
-        socklen_t peer_addr_size;
-        memset((char *) &peer_addr, sizeof(peer_addr), 0);
+int32_t accept_pending_connection(int32_t accept_sock_descr) {
+    struct sockaddr_in peer_addr;
+    socklen_t peer_addr_size;
+    memset((char *) &peer_addr, sizeof(peer_addr), 0);
 
-        const int32_t conn_sock_desc = accept(server->ac_sock, (struct sockaddr *) &peer_addr, &peer_addr_size);
-        if (conn_sock_desc == -1) {
-            handle_error("csocket");
-        }
+    const int32_t peer_sock = accept(accept_sock_descr, (struct sockaddr *) &peer_addr, &peer_addr_size);
 
-        printf("Accepted new connection from host %d\n", ntohs(peer_addr.sin_port));
-
-        char buffer[INCOMMING_BUFFER_LENGTH];
-        memset(buffer, 0, INCOMMING_BUFFER_LENGTH);
-
-        if (read(conn_sock_desc, buffer, INCOMMING_BUFFER_LENGTH) == -1) {
-            handle_error("read data");
-        }
-
-        printf("Received message %s\n", buffer);
-
-        close(conn_sock_desc);
+    if (peer_sock == -1) {
+        handle_error("peer_sock accept");
     }
+
+#ifdef DEBUG
+    printf("Accepted new connection from host %d\n", ntohs(peer_addr.sin_port));
+#endif
+    return peer_sock;
+}
+
+void handle_pending_request(struct HttpServer *server) {
+    int32_t peer_sock = accept_pending_connection(server->ac_sock);
+
+    char request_buffer[INCOMMING_BUFFER_LENGTH];
+    memset(request_buffer, 0, INCOMMING_BUFFER_LENGTH);
+
+    char chunk[REQ_CHUNK_SIZE];
+
+    int32_t summary_bytes_count = 0;
+    int32_t bytes_read = 0;
+    do {
+        memset(chunk, 0, REQ_CHUNK_SIZE);
+        bytes_read = read(peer_sock, chunk, REQ_CHUNK_SIZE);
+        if (bytes_read < 0) {
+            handle_error("Reading data");
+        }
+
+        summary_bytes_count += bytes_read;
+
+        if (summary_bytes_count >= INCOMMING_BUFFER_LENGTH) {
+            handle_error("Request buffer overflow");
+        }
+
+        strcat(request_buffer, chunk);
+    } while (bytes_read != 0);
+
+    printf("Received message %s\n", request_buffer);
+
+    close(peer_sock);
 }

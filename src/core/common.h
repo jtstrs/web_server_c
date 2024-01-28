@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define LOG
+#define DEBUG
 
 #define handle_error(msg)   \
     do {                    \
