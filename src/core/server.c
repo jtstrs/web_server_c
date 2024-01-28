@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+
 struct HttpServer {
     char host_name[HOST_NAME_LENGTH];
     int32_t port;
@@ -22,25 +23,40 @@ struct HttpServer *createServer(char *host, int32_t port) {
 
     strcpy(instance->host_name, host);
     instance->port = port;
+    instance->conn_sock_descr = INVALID_DESCRIPTOR;
 
     return instance;
+}
+
+void releaseSocket(int32_t socket_descriptor) {
+    if (socket_descriptor != INVALID_DESCRIPTOR) {
+        return;
+    }
+
+    int32_t closing_status = close(socket_descriptor);
+    if (closing_status == ERROR_STATUS) {
+        if (shutdown(socket_descriptor, SHUT_RDWR) == ERROR_STATUS) {
+            handle_error("Cannot gracefuly close socket ");
+        }
+    }
 }
 
 void releaseServer(struct HttpServer *server) {
     if (!server) {
         return;
     }
+    releaseSocket(server->conn_sock_descr);
     free(server);
 }
 
-void start(struct HttpServer *server) {
-    const int32_t inc_sock_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+void initServer(struct HttpServer *server) {
+    const int32_t sock_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 #ifdef LOG
     printf("Create listening socket...\n");
 #endif
 
-    if (inc_sock_descr == -1) {
+    if (sock_descr == ERROR_STATUS) {
         handle_error("psocket");
     }
 
@@ -54,7 +70,7 @@ void start(struct HttpServer *server) {
     printf("Bindning listening socket...\n");
 #endif
 
-    if (bind(inc_sock_descr, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) == -1) {
+    if (bind(sock_descr, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) == ERROR_STATUS) {
         handle_error("bind");
     }
 
@@ -62,16 +78,20 @@ void start(struct HttpServer *server) {
 #ifdef LOG
     printf("Start listening on %d port...\n", server->port);
 #endif
-    if (listen(inc_sock_descr, BACKLOG_QUEUE) == -1) {
+    if (listen(sock_descr, BACKLOG_QUEUE) == ERROR_STATUS) {
         handle_error("listen");
     }
 
+    server->conn_sock_descr = sock_descr;
+}
+
+void start(struct HttpServer *server) {
     while (ALWAYS) {
         struct sockaddr_in peer_addr;
         socklen_t peer_addr_size;
         memset((char *) &peer_addr, sizeof(peer_addr), 0);
 
-        const int32_t conn_sock_desc = accept(inc_sock_descr, (struct sockaddr *) &peer_addr, &peer_addr_size);
+        const int32_t conn_sock_desc = accept(server->conn_sock_descr, (struct sockaddr *) &peer_addr, &peer_addr_size);
         if (conn_sock_desc == -1) {
             handle_error("csocket");
         }
