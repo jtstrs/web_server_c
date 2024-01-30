@@ -1,6 +1,7 @@
 #include "server.h"
 #include "common.h"
 
+#include "log.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,9 +70,6 @@ void release_server(struct HttpServer *server) {
 }
 
 void init_server(struct HttpServer *server) {
-#ifdef DEBUG
-    printf("server.c:init_server/Enter\n");
-#endif
 
     if (!server) {
         return;
@@ -89,18 +87,14 @@ void init_server(struct HttpServer *server) {
     serv_addr.sin_port = htons(server->port);
     serv_addr.sin_family = AF_INET;
 
-#ifdef DEBUG
-    printf("Bindning listening socket...\n");
-#endif
+    log_message(INFO_LVL, "Binding listening socket...");
 
     if (bind(sock_descr, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) == ERROR_STATUS) {
         handle_error("bind");
     }
 
+    log_message(INFO_LVL, "Start listening on %d port...", server->port);
 
-#ifdef DEBUG
-    printf("Start listening on %d port...\n", server->port);
-#endif
     if (listen(sock_descr, BACKLOG_QUEUE) == ERROR_STATUS) {
         handle_error("listen");
     }
@@ -119,9 +113,7 @@ int32_t accept_pending_connection(int32_t accept_sock_descr) {
         handle_error("peer_sock accept");
     }
 
-#ifdef DEBUG
-    printf("Accepted new connection from host %d\n", ntohs(peer_addr.sin_port));
-#endif
+    log_message(INFO_LVL, "Accepted new connection from host %d", ntohs(peer_addr.sin_port));
     return peer_sock;
 }
 
@@ -152,15 +144,13 @@ void handle_pending_request(struct HttpServer *server) {
     } while (bytes_read != 0);
 
 
-#ifdef DEBUG
-    printf("Message content \n%s\n", request_buffer);
-#endif
+    log_message(INFO_LVL, "Message content \n%s\n", request_buffer);
     close(peer_sock);
 }
 
 void run(struct HttpServer *server) {
     if (!server) {
-        printf("Server is null\n");
+        log_message(ERROR_LVL, "Server ptr is null");
         return;
     }
     // schedule_task(server->execution_context, handle_pending_request);
