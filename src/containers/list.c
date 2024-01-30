@@ -50,6 +50,13 @@ void release_list(struct List *list) {
     free(list);
 }
 
+int32_t get_list_size(struct List *list) {
+    if (!list) {
+        return 0;
+    }
+    return list->size;
+}
+
 void insert_item(struct List *list, void *data, int32_t position) {
     if (!list) {
         return;
@@ -118,6 +125,10 @@ void *last_item(struct List *list) {
         return NULL;
     }
 
+    if (!get_list_size(list)) {
+        return NULL;
+    }
+
     struct ListNode *forwarder = list->head->next;
     while (forwarder && forwarder->next) {
         forwarder = forwarder->next;
@@ -142,13 +153,6 @@ void *get_list_item(struct List *list, int32_t position) {
     }
 
     return forwarder->data;
-}
-
-int32_t get_list_size(struct List *list) {
-    if (!list) {
-        return 0;
-    }
-    return list->size;
 }
 
 void remove_item(struct List *list, int32_t position) {
