@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "async_context.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 
@@ -17,20 +18,35 @@ struct HttpServer {
     char host_name[HOST_NAME_LENGTH];
     int32_t port;
     int32_t ac_sock;
+
+    struct AsyncContext *execution_context;
 };
 
 
-struct HttpServer *createServer(char *host, int32_t port) {
+struct HttpServer *create_server(char *host, int32_t port) {
     struct HttpServer *instance = (struct HttpServer *) malloc(sizeof(struct HttpServer));
 
+    if (!instance) {
+        return NULL;
+    }
+
     strcpy(instance->host_name, host);
+
     instance->port = port;
     instance->ac_sock = INVALID_DESCRIPTOR;
 
+    struct AsyncContext *ctx = create_async_context();
+
+    if (!ctx) {
+        free(instance);
+        return NULL;
+    }
+
+    instance->execution_context = ctx;
     return instance;
 }
 
-void releaseSocket(int32_t socket_descriptor) {
+void release_socket(int32_t socket_descriptor) {
     if (socket_descriptor != INVALID_DESCRIPTOR) {
         return;
     }
@@ -43,20 +59,25 @@ void releaseSocket(int32_t socket_descriptor) {
     }
 }
 
-void releaseServer(struct HttpServer *server) {
+void release_server(struct HttpServer *server) {
     if (!server) {
         return;
     }
-    releaseSocket(server->ac_sock);
+    release_socket(server->ac_sock);
+    release_async_context(server->execution_context);
     free(server);
 }
 
-void initServer(struct HttpServer *server) {
-    const int32_t sock_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
+void init_server(struct HttpServer *server) {
 #ifdef DEBUG
-    printf("Create listening socket...\n");
+    printf("server.c:init_server/Enter\n");
 #endif
+
+    if (!server) {
+        return;
+    }
+
+    const int32_t sock_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (sock_descr == ERROR_STATUS) {
         handle_error("psocket");
@@ -131,6 +152,17 @@ void handle_pending_request(struct HttpServer *server) {
     } while (bytes_read != 0);
 
 
+#ifdef DEBUG
     printf("Message content \n%s\n", request_buffer);
+#endif
     close(peer_sock);
+}
+
+void run(struct HttpServer *server) {
+    if (!server) {
+        printf("Server is null\n");
+        return;
+    }
+    // schedule_task(server->execution_context, handle_pending_request);
+    execute(server->execution_context);
 }
