@@ -3,8 +3,6 @@
 
 #include <stdio.h>
 
-#define DEBUG
-
 #define handle_error(msg)   \
     do {                    \
         perror(msg);        \
