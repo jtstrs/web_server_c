@@ -12,7 +12,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#define REQ_CHUNK_SIZE 256
+#define REQUEST_BUFFER_SIZE 2048
 
 
 struct HttpServer {
@@ -120,29 +120,11 @@ int32_t accept_pending_connection(int32_t accept_sock_descr) {
 void handle_pending_request(struct HttpServer *server) {
     int32_t peer_sock = accept_pending_connection(server->ac_sock);
 
-    char request_buffer[INCOMMING_BUFFER_LENGTH];
-    memset(request_buffer, 0, INCOMMING_BUFFER_LENGTH);
-
-    char chunk[REQ_CHUNK_SIZE];
+    char request_buffer[REQUEST_BUFFER_SIZE + 1];
+    memset(request_buffer, 0, REQUEST_BUFFER_SIZE);
 
     int32_t summary_bytes_count = 0;
-    int32_t bytes_read = 0;
-    do {
-        memset(chunk, 0, REQ_CHUNK_SIZE);
-        bytes_read = read(peer_sock, chunk, REQ_CHUNK_SIZE);
-        if (bytes_read < 0) {
-            handle_error("Reading data");
-        }
-
-        summary_bytes_count += bytes_read;
-
-        if (summary_bytes_count >= INCOMMING_BUFFER_LENGTH) {
-            handle_error("Request buffer overflow");
-        }
-
-        strcat(request_buffer, chunk);
-    } while (bytes_read != 0);
-
+    int32_t bytes_read = read(peer_sock, request_buffer, REQUEST_BUFFER_SIZE);
 
     log_message(INFO_LVL, "Message content \n%s\n", request_buffer);
     close(peer_sock);

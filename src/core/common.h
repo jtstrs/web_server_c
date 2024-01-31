@@ -13,7 +13,6 @@
 #define ERROR_STATUS -1
 #define ALWAYS 1
 #define BACKLOG_QUEUE 10
-#define INCOMMING_BUFFER_LENGTH 2048
 #define HOST_NAME_LENGTH 64
 
 #endif
