@@ -60,7 +60,7 @@ void release_async_context(struct AsyncContext *ctx) {
 
 void schedule_task(struct AsyncContext *context, void (*task)()) {
     pthread_mutex_lock(&context->mut);
-    push_item(context->tasks_queue, task);
+    push_list_item(context->tasks_queue, task);
     pthread_mutex_unlock(&context->mut);
 }
 
@@ -69,10 +69,10 @@ void *event_loop(void *context) {
 
     while (ALWAYS) {
         pthread_mutex_lock(&ctx->mut);
-        struct AsyncTask *task = last_item(ctx->tasks_queue);
+        struct AsyncTask *task = get_last_list_item(ctx->tasks_queue);
         if (task) {
             execute_task(task);
-            pop_item(ctx->tasks_queue);
+            pop_list_item(ctx->tasks_queue);
         }
         pthread_mutex_unlock(&ctx->mut);
     }

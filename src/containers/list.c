@@ -57,7 +57,7 @@ int32_t get_list_size(struct List *list) {
     return list->size;
 }
 
-void insert_item(struct List *list, void *data, int32_t position) {
+void insert_list_item(struct List *list, void *data, int32_t position) {
     if (!list) {
         return;
     }
@@ -94,19 +94,19 @@ void insert_item(struct List *list, void *data, int32_t position) {
     list->size++;
 }
 
-void add_item(struct List *list, void *data) {
-    insert_item(list, data, 0);
+void add_list_item(struct List *list, void *data) {
+    insert_list_item(list, data, 0);
 }
 
-void push_item(struct List *list, void *data) {
-    insert_item(list, data, list->size);
+void push_list_item(struct List *list, void *data) {
+    insert_list_item(list, data, list->size);
 }
 
-void pop_item(struct List *list) {
-    remove_item(list, list->size - 1);
+void pop_list_item(struct List *list) {
+    remove_list_item(list, list->size - 1);
 }
 
-void *first_item(struct List *list) {
+void *get_first_list_item(struct List *list) {
     if (!list) {
         return NULL;
     }
@@ -120,7 +120,7 @@ void *first_item(struct List *list) {
     return first_node->data;
 }
 
-void *last_item(struct List *list) {
+void *get_last_list_item(struct List *list) {
     if (!list) {
         return NULL;
     }
@@ -155,7 +155,7 @@ void *get_list_item(struct List *list, int32_t position) {
     return forwarder->data;
 }
 
-void remove_item(struct List *list, int32_t position) {
+void remove_list_item(struct List *list, int32_t position) {
     if (!list) {
         return;
     }
