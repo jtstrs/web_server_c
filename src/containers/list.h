@@ -3,22 +3,22 @@
 
 #include <stdint.h>
 
-struct List;
+typedef struct List List;
 
-struct List *create_list(void (*deleter)(void *));
-void release_list(struct List *list);
+List *create_list(void (*deleter)(void *));
+void release_list(List *list);
 
-void insert_list_item(struct List *list, void *data, int32_t position);
-void remove_list_item(struct List *list, int32_t position);
+void insert_list_item(List *list, void *data, int32_t position);
+void remove_list_item(List *list, int32_t position);
 
-void add_list_item(struct List *list, void *data);
+void add_list_item(List *list, void *data);
 
-void push_list_item(struct List *list, void *data);
-void pop_list_item(struct List *list);
+void push_list_item(List *list, void *data);
+void pop_list_item(List *list);
 
-void *get_first_list_item(struct List *list);
-void *get_last_list_item(struct List *list);
-void *get_list_item(struct List *list, int32_t position);
-int32_t get_list_size(struct List *list);
+void *get_first_list_item(List *list);
+void *get_last_list_item(List *list);
+void *get_list_item(List *list, int32_t position);
+int32_t get_list_size(List *list);
 
 #endif

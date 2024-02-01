@@ -2,7 +2,6 @@
 #include "common.h"
 
 #include "log.h"
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,12 +19,12 @@ struct HttpServer {
     int32_t port;
     int32_t ac_sock;
 
-    struct AsyncContext *execution_context;
+    AsyncContext *execution_context;
 };
 
 
-struct HttpServer *create_server(char *host, int32_t port) {
-    struct HttpServer *instance = (struct HttpServer *) malloc(sizeof(struct HttpServer));
+HttpServer *create_server(char *host, int32_t port) {
+    HttpServer *instance = (HttpServer *) malloc(sizeof(HttpServer));
 
     if (!instance) {
         return NULL;
@@ -36,7 +35,7 @@ struct HttpServer *create_server(char *host, int32_t port) {
     instance->port = port;
     instance->ac_sock = INVALID_DESCRIPTOR;
 
-    struct AsyncContext *ctx = create_async_context();
+    AsyncContext *ctx = create_async_context();
 
     if (!ctx) {
         free(instance);
@@ -60,7 +59,7 @@ void release_socket(int32_t socket_descriptor) {
     }
 }
 
-void release_server(struct HttpServer *server) {
+void release_server(HttpServer *server) {
     if (!server) {
         return;
     }
@@ -69,7 +68,7 @@ void release_server(struct HttpServer *server) {
     free(server);
 }
 
-void init_server(struct HttpServer *server) {
+void init_server(HttpServer *server) {
 
     if (!server) {
         return;
@@ -117,7 +116,7 @@ int32_t accept_pending_connection(int32_t accept_sock_descr) {
     return peer_sock;
 }
 
-void handle_pending_request(struct HttpServer *server) {
+void handle_pending_request(HttpServer *server) {
     int32_t peer_sock = accept_pending_connection(server->ac_sock);
 
     char request_buffer[REQUEST_BUFFER_SIZE + 1];
@@ -130,7 +129,7 @@ void handle_pending_request(struct HttpServer *server) {
     close(peer_sock);
 }
 
-void run(struct HttpServer *server) {
+void run(HttpServer *server) {
     if (!server) {
         log_message(ERROR_LVL, "Server ptr is null");
         return;

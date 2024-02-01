@@ -7,7 +7,7 @@
 #include <string.h>
 
 struct AsyncContext {
-    struct List *tasks_queue;
+    List *tasks_queue;
     pthread_t thread_id;
     pthread_mutex_t mut;
 };
@@ -17,19 +17,21 @@ struct AsyncTask {
     void (*task)();
 };
 
-void execute_task(struct AsyncTask *task) {
+typedef struct AsyncTask AsyncTask;
+
+void execute_task(AsyncTask *task) {
     task->task();
 }
 
-struct AsyncContext *create_async_context() {
-    struct AsyncContext *ctx = (struct AsyncContext *) malloc(sizeof(struct AsyncContext));
+AsyncContext *create_async_context() {
+    AsyncContext *ctx = (AsyncContext *) malloc(sizeof(AsyncContext));
 
     if (!ctx) {
         return NULL;
     }
 
     // TODO: Probably need non trivial deleter
-    struct List *tasks_queue = create_list(NULL);
+    List *tasks_queue = create_list(NULL);
 
     if (!tasks_queue) {
         free(ctx);
@@ -46,7 +48,7 @@ struct AsyncContext *create_async_context() {
     ctx->thread_id = 0;
 }
 
-void release_async_context(struct AsyncContext *ctx) {
+void release_async_context(AsyncContext *ctx) {
     if (!ctx) {
         return;
     }
@@ -59,18 +61,18 @@ void release_async_context(struct AsyncContext *ctx) {
     free(ctx);
 }
 
-void schedule_task(struct AsyncContext *context, void (*task)()) {
+void schedule_task(AsyncContext *context, void (*task)()) {
     pthread_mutex_lock(&context->mut);
     push_list_item(context->tasks_queue, task);
     pthread_mutex_unlock(&context->mut);
 }
 
 void *event_loop(void *context) {
-    struct AsyncContext *ctx = (struct AsyncContext *) context;
+    AsyncContext *ctx = (AsyncContext *) context;
 
     while (ALWAYS) {
         pthread_mutex_lock(&ctx->mut);
-        struct AsyncTask *task = get_last_list_item(ctx->tasks_queue);
+        AsyncTask *task = get_last_list_item(ctx->tasks_queue);
         if (task) {
             execute_task(task);
             pop_list_item(ctx->tasks_queue);
@@ -79,7 +81,7 @@ void *event_loop(void *context) {
     }
 }
 
-void execute(struct AsyncContext *context) {
+void execute(AsyncContext *context) {
     if (pthread_create(&context->thread_id, NULL, event_loop, context) != 0) {
         handle_error("Cannot create thread for async context\n");
     }

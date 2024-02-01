@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-void print_list(struct List *list) {
+void print_list(List *list) {
     if (!list) {
         printf("[]\n");
         return;

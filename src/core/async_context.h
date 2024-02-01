@@ -3,12 +3,12 @@
 
 #include <stdint.h>
 
-struct AsyncContext;
+typedef struct AsyncContext AsyncContext;
 
-struct AsyncContext *create_async_context();
-void release_async_context(struct AsyncContext *);
+AsyncContext *create_async_context();
+void release_async_context(AsyncContext *);
 
-void execute(struct AsyncContext *);
-void schedule_task(struct AsyncContext *, void (*task)());
+void execute(AsyncContext *);
+void schedule_task(AsyncContext *, void (*task)());
 
 #endif

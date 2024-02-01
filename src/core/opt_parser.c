@@ -7,8 +7,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-void print_help() {
-}
+
+union OptValue {
+    int32_t iv;
+};
+
+enum OptField {
+    Port,
+    Unknown
+};
+
+enum ParseStage {
+    WaitForDecl,
+    WaitForValue,
+    Interrupt
+};
+
+typedef union OptValue OptValue;
+typedef enum OptField OptField;
+typedef enum ParseStage ParseStage;
 
 int32_t parse_int32(char *token) {
     if (!token) {
@@ -30,22 +47,7 @@ int32_t parse_int32(char *token) {
     return value;
 }
 
-union OptValue {
-    int32_t iv;
-};
-
-enum OptField {
-    Port,
-    Unknown
-};
-
-enum ParseStage {
-    WaitForDecl,
-    WaitForValue,
-    Interrupt
-};
-
-enum OptField parse_opt_field(char *token) {
+OptField parse_opt_field(char *token) {
     if (!strcmp("-p", token) || !strcmp("--port", token)) {
         return Port;
     } else {
@@ -53,8 +55,8 @@ enum OptField parse_opt_field(char *token) {
     }
 }
 
-union OptValue parse_opt_value(char *token, enum OptField field, bool *ok) {
-    union OptValue val;
+OptValue parse_opt_value(char *token, OptField field, bool *ok) {
+    OptValue val;
 
     switch (field) {
         case Port:
@@ -73,7 +75,7 @@ union OptValue parse_opt_value(char *token, enum OptField field, bool *ok) {
     return val;
 }
 
-void assign_option(struct Options *opts, enum OptField opt, union OptValue val) {
+void assign_option(Options *opts, OptField opt, OptValue val) {
     switch (opt) {
         case Port:
             opts->port = val.iv;
@@ -85,7 +87,7 @@ void assign_option(struct Options *opts, enum OptField opt, union OptValue val) 
     }
 }
 
-char *opt_field_to_str(enum OptField opt) {
+char *opt_field_to_str(OptField opt) {
     switch (opt) {
         case Port:
             return "Port";
@@ -97,7 +99,7 @@ char *opt_field_to_str(enum OptField opt) {
     };
 }
 
-struct Options *parse_opts(int32_t argc, char *argv[]) {
+Options *parse_opts(int32_t argc, char *argv[]) {
     if (argc <= 1) {
         printf("Too small arguments count. Write --help to see available options.\n");
         exit(0);
@@ -105,13 +107,13 @@ struct Options *parse_opts(int32_t argc, char *argv[]) {
 
     char **opt_token = &argv[1];
 
-    static struct Options opts;
+    static Options opts;
     opts.port = 0;
 
-    enum ParseStage stage = WaitForDecl;
-    enum OptField opt = Unknown;
+    ParseStage stage = WaitForDecl;
+    OptField opt = Unknown;
 
-    union OptValue val;
+    OptValue val;
     val.iv = 0;
 
     while (*opt_token != NULL) {

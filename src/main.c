@@ -5,8 +5,8 @@
 #include "core/server.h"
 
 int32_t main(int32_t argc, char *argv[]) {
-    struct Options *opts = parse_opts(argc, argv);
-    struct HttpServer *server = create_server("", opts->port);
+    Options *opts = parse_opts(argc, argv);
+    HttpServer *server = create_server("", opts->port);
     init_server(server);
 
     while (ALWAYS) {

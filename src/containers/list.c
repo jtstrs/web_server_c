@@ -3,35 +3,37 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct ListNode ListNode;
+
 struct ListNode {
     void *data;
-    struct ListNode *next;
-    struct ListNode *prev;
+    ListNode *next;
+    ListNode *prev;
 };
 
 struct List {
-    struct ListNode *head;
+    ListNode *head;
     int32_t size;
 
     void (*deleter)(void *);
 };
 
 
-struct List *create_list(void (*deleter)(void *)) {
-    struct List *list = (struct List *) malloc(sizeof(struct List));
+List *create_list(void (*deleter)(void *)) {
+    List *list = (List *) malloc(sizeof(List));
 
     if (!list) {
         return NULL;
     }
 
-    struct ListNode *sentinel_node = (struct ListNode *) malloc(sizeof(struct ListNode));
+    ListNode *sentinel_node = (ListNode *) malloc(sizeof(ListNode));
 
     if (!sentinel_node) {
         free(list);
         return NULL;
     }
 
-    memset((char *) sentinel_node, 0, sizeof(struct ListNode));
+    memset((char *) sentinel_node, 0, sizeof(ListNode));
 
     list->head = sentinel_node;
     list->size = 0;
@@ -41,10 +43,10 @@ struct List *create_list(void (*deleter)(void *)) {
     return list;
 }
 
-void release_list(struct List *list) {
-    struct ListNode *forwarder = list->head;
+void release_list(List *list) {
+    ListNode *forwarder = list->head;
     while (forwarder) {
-        struct ListNode *temp = forwarder->next;
+        ListNode *temp = forwarder->next;
 
         list->deleter(forwarder->data);
         free(forwarder);
@@ -54,14 +56,14 @@ void release_list(struct List *list) {
     free(list);
 }
 
-int32_t get_list_size(struct List *list) {
+int32_t get_list_size(List *list) {
     if (!list) {
         return 0;
     }
     return list->size;
 }
 
-void insert_list_item(struct List *list, void *data, int32_t position) {
+void insert_list_item(List *list, void *data, int32_t position) {
     if (!list) {
         return;
     }
@@ -70,13 +72,13 @@ void insert_list_item(struct List *list, void *data, int32_t position) {
         return;
     }
 
-    struct ListNode *forwarder = list->head;
+    ListNode *forwarder = list->head;
 
     for (int32_t index = 0; index < position; ++index) {
         forwarder = forwarder->next;
     }
 
-    struct ListNode *next_item = (struct ListNode *) malloc(sizeof(struct ListNode));
+    ListNode *next_item = (ListNode *) malloc(sizeof(ListNode));
 
     if (!next_item) {
         return;
@@ -84,7 +86,7 @@ void insert_list_item(struct List *list, void *data, int32_t position) {
 
     next_item->data = data;
 
-    struct ListNode *current_next = forwarder->next;
+    ListNode *current_next = forwarder->next;
 
     next_item->prev = forwarder;
     next_item->next = current_next;
@@ -98,24 +100,24 @@ void insert_list_item(struct List *list, void *data, int32_t position) {
     list->size++;
 }
 
-void add_list_item(struct List *list, void *data) {
+void add_list_item(List *list, void *data) {
     insert_list_item(list, data, 0);
 }
 
-void push_list_item(struct List *list, void *data) {
+void push_list_item(List *list, void *data) {
     insert_list_item(list, data, list->size);
 }
 
-void pop_list_item(struct List *list) {
+void pop_list_item(List *list) {
     remove_list_item(list, list->size - 1);
 }
 
-void *get_first_list_item(struct List *list) {
+void *get_first_list_item(List *list) {
     if (!list) {
         return NULL;
     }
 
-    struct ListNode *first_node = list->head->next;
+    ListNode *first_node = list->head->next;
 
     if (!first_node) {
         return NULL;
@@ -124,7 +126,7 @@ void *get_first_list_item(struct List *list) {
     return first_node->data;
 }
 
-void *get_last_list_item(struct List *list) {
+void *get_last_list_item(List *list) {
     if (!list) {
         return NULL;
     }
@@ -133,7 +135,7 @@ void *get_last_list_item(struct List *list) {
         return NULL;
     }
 
-    struct ListNode *forwarder = list->head->next;
+    ListNode *forwarder = list->head->next;
     while (forwarder && forwarder->next) {
         forwarder = forwarder->next;
     }
@@ -141,7 +143,7 @@ void *get_last_list_item(struct List *list) {
     return forwarder->data;
 }
 
-void *get_list_item(struct List *list, int32_t position) {
+void *get_list_item(List *list, int32_t position) {
     if (!list) {
         return NULL;
     }
@@ -150,7 +152,7 @@ void *get_list_item(struct List *list, int32_t position) {
         return NULL;
     }
 
-    struct ListNode *forwarder = list->head->next;
+    ListNode *forwarder = list->head->next;
 
     for (int32_t index = 0; index < position; ++index) {
         forwarder = forwarder->next;
@@ -159,7 +161,7 @@ void *get_list_item(struct List *list, int32_t position) {
     return forwarder->data;
 }
 
-void remove_list_item(struct List *list, int32_t position) {
+void remove_list_item(List *list, int32_t position) {
     if (!list) {
         return;
     }
@@ -168,14 +170,14 @@ void remove_list_item(struct List *list, int32_t position) {
         return;
     }
 
-    struct ListNode *forwarder = list->head;
+    ListNode *forwarder = list->head;
 
     for (int32_t index = 0; index <= position; ++index) {
         forwarder = forwarder->next;
     }
 
-    struct ListNode *forwarder_next = forwarder->next;
-    struct ListNode *forwarder_prev = forwarder->prev;
+    ListNode *forwarder_next = forwarder->next;
+    ListNode *forwarder_prev = forwarder->prev;
 
     if (forwarder_next) {
         forwarder_prev->next = forwarder_next;

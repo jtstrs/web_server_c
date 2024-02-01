@@ -3,12 +3,14 @@
 
 #include "stdint.h"
 
-struct HttpServer *create_server(char *host, int32_t port);
-void release_server(struct HttpServer *server);
+typedef struct HttpServer HttpServer;
 
-void init_server(struct HttpServer *server);
-void handle_pending_request(struct HttpServer *server);
-void run(struct HttpServer *server);
+HttpServer *create_server(char *host, int32_t port);
+void release_server(HttpServer *server);
+
+void init_server(HttpServer *server);
+void handle_pending_request(HttpServer *server);
+void run(HttpServer *server);
 
 
 #endif
