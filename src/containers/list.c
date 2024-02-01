@@ -12,10 +12,12 @@ struct ListNode {
 struct List {
     struct ListNode *head;
     int32_t size;
+
+    void (*deleter)(void *);
 };
 
 
-struct List *create_list() {
+struct List *create_list(void (*deleter)(void *)) {
     struct List *list = (struct List *) malloc(sizeof(struct List));
 
     if (!list) {
@@ -34,6 +36,8 @@ struct List *create_list() {
     list->head = sentinel_node;
     list->size = 0;
 
+    list->deleter = deleter ? deleter : free;
+
     return list;
 }
 
@@ -42,7 +46,7 @@ void release_list(struct List *list) {
     while (forwarder) {
         struct ListNode *temp = forwarder->next;
 
-        free(forwarder->data);
+        list->deleter(forwarder->data);
         free(forwarder);
 
         forwarder = temp;
@@ -180,7 +184,7 @@ void remove_list_item(struct List *list, int32_t position) {
         forwarder_prev->next = NULL;
     }
 
-    free(forwarder->data);
+    list->deleter(forwarder->data);
     free(forwarder);
 
     list->size--;

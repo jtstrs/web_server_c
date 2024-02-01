@@ -28,7 +28,8 @@ struct AsyncContext *create_async_context() {
         return NULL;
     }
 
-    struct List *tasks_queue = create_list();
+    // TODO: Probably need non trivial deleter
+    struct List *tasks_queue = create_list(NULL);
 
     if (!tasks_queue) {
         free(ctx);

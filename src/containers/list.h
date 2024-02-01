@@ -5,7 +5,7 @@
 
 struct List;
 
-struct List *create_list();
+struct List *create_list(void (*deleter)(void *));
 void release_list(struct List *list);
 
 void insert_list_item(struct List *list, void *data, int32_t position);
