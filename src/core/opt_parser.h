@@ -5,6 +5,7 @@
 
 struct Options {
     uint32_t port;
+    uint32_t logging_level;
 };
 
 typedef struct Options Options;

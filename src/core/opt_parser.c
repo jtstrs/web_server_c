@@ -14,6 +14,7 @@ union OptValue {
 
 enum OptField {
     Port,
+    LogggingLevel,
     Unknown
 };
 
@@ -50,6 +51,9 @@ int32_t parse_int32(char *token) {
 OptField parse_opt_field(char *token) {
     if (!strcmp("-p", token) || !strcmp("--port", token)) {
         return Port;
+    }
+    if (!strcmp("-l", token) || !strcmp("--logging_level", token)) {
+        return LogggingLevel;
     } else {
         return Unknown;
     }
@@ -59,13 +63,16 @@ OptValue parse_opt_value(char *token, OptField field, bool *ok) {
     OptValue val;
 
     switch (field) {
+        case LogggingLevel:
         case Port:
-            int32_t port_val = parse_int32(token);
-            if (port_val == -1) {
+            int32_t int_val = parse_int32(token);
+            if (int_val == -1) {
                 *ok = false;
             } else {
-                val.iv = port_val;
+                val.iv = int_val;
             }
+            break;
+        case Unknown:
             break;
         default:
             // Never should happen
@@ -80,6 +87,9 @@ void assign_option(Options *opts, OptField opt, OptValue val) {
         case Port:
             opts->port = val.iv;
             break;
+        case LogggingLevel:
+            opts->logging_level = val.iv;
+            break;
         case Unknown:
         default:
             // Never should happen
@@ -91,8 +101,11 @@ char *opt_field_to_str(OptField opt) {
     switch (opt) {
         case Port:
             return "Port";
+        case LogggingLevel:
+            return "LoggingLevel";
         // [Fallthrough]
         case Unknown:
+            return "Unknown";
         default:
             // Never should happen
             exit(EXIT_FAILURE);
@@ -109,6 +122,7 @@ Options *parse_opts(int32_t argc, char *argv[]) {
 
     static Options opts;
     opts.port = 0;
+    opts.logging_level = 0;
 
     ParseStage stage = WaitForDecl;
     OptField opt = Unknown;
@@ -120,12 +134,12 @@ Options *parse_opts(int32_t argc, char *argv[]) {
         switch (stage) {
             case WaitForDecl:
                 opt = parse_opt_field(*opt_token);
-                stage = WaitForValue;
+                stage = (opt != Unknown) ? WaitForValue : Interrupt;
                 break;
             case WaitForValue:
-                bool val_parse_suc = true;
-                val = parse_opt_value(*opt_token, opt, &val_parse_suc);
-                if (!val_parse_suc) {
+                bool parse_status = true;
+                val = parse_opt_value(*opt_token, opt, &parse_status);
+                if (!parse_status) {
                     stage = Interrupt;
                     break;
                 }
@@ -140,12 +154,26 @@ Options *parse_opts(int32_t argc, char *argv[]) {
                 break;
         }
 
+        if (stage == Interrupt) {
+            break;
+        }
+
         *opt_token++;
+    }
+
+    if (opt == Unknown && stage == Interrupt) {
+        printf("Provided incorrect option: %s. Abort\n", *opt_token);
+        exit(0);
     }
 
     if (stage == Interrupt || stage == WaitForValue) {
         printf("Value for %s option wasnt provied. Abort.", opt_field_to_str(opt));
-        exit(EXIT_FAILURE);
+        exit(0);
+    }
+
+    if (opts.port == 0) {
+        printf("Mandatory --port option wasnt provided. Abort.");
+        exit(0);
     }
 
     return &opts;

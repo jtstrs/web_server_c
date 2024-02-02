@@ -86,13 +86,13 @@ void init_server(HttpServer *server) {
     serv_addr.sin_port = htons(server->port);
     serv_addr.sin_family = AF_INET;
 
-    log_message(INFO_LVL, "Binding listening socket...");
+    log_message(INFO_LEVEL, "Binding listening socket...");
 
     if (bind(sock_descr, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) == ERROR_STATUS) {
         handle_error("bind");
     }
 
-    log_message(INFO_LVL, "Start listening on %d port...", server->port);
+    log_message(INFO_LEVEL, "Start listening on %d port...", server->port);
 
     if (listen(sock_descr, BACKLOG_QUEUE) == ERROR_STATUS) {
         handle_error("listen");
@@ -112,7 +112,7 @@ int32_t accept_pending_connection(int32_t accept_sock_descr) {
         handle_error("peer_sock accept");
     }
 
-    log_message(INFO_LVL, "Accepted new connection from host %d", ntohs(peer_addr.sin_port));
+    log_message(INFO_LEVEL, "Accepted new connection from host %d", ntohs(peer_addr.sin_port));
     return peer_sock;
 }
 
@@ -125,13 +125,13 @@ void handle_pending_request(HttpServer *server) {
     int32_t summary_bytes_count = 0;
     int32_t bytes_read = read(peer_sock, request_buffer, REQUEST_BUFFER_SIZE);
 
-    log_message(INFO_LVL, "Message content \n%s\n", request_buffer);
+    log_message(INFO_LEVEL, "Message content \n%s\n", request_buffer);
     close(peer_sock);
 }
 
 void run(HttpServer *server) {
     if (!server) {
-        log_message(ERROR_LVL, "Server ptr is null");
+        log_message(ERROR_LEVEL, "Server ptr is null");
         return;
     }
     // schedule_task(server->execution_context, handle_pending_request);

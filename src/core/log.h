@@ -4,12 +4,23 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-#define DEBUG_LVL 0
-#define INFO_LVL 1
-#define WARN_LVL 2
-#define ERROR_LVL 3
-#define FATAL_LVL 4
+enum LogLevel {
+    DEBUG_LEVEL,
+    INFO_LEVEL,
+    WARN_LEVEL,
+    ERROR_LEVEL,
+    FATAL_LEVEL,
+    LOG_LEVELS_COUNT
+};
 
-void log_message(int32_t log_level, char *fmt, ...);
+struct Logger;
+typedef struct Logger Logger;
+
+typedef enum LogLevel LogLevel;
+
+void set_accept_log_level(Logger *logger, LogLevel log_level);
+
+void log_message_with_logger(const Logger *logger, LogLevel log_level, char *fmt, ...);
+void log_message(LogLevel log_level, char *fmt, ...);
 
 #endif
