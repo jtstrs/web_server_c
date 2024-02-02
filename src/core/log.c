@@ -47,7 +47,7 @@ void log_message_impl(const Logger *logger, LogLevel log_level, char *formatted_
         logger = &default_logger;
     }
 
-    if (log_level <= logger->log_level) {
+    if (log_level < logger->log_level) {
         return;
     }
 
@@ -61,7 +61,7 @@ void log_message_impl(const Logger *logger, LogLevel log_level, char *formatted_
 
     strftime(time_buffer, TIME_BUFFER_SIZE, "[%Y-%m-%d %H:%M:%S]", tm_info);
 
-    char *log_lvl_buffer = log_level_to_str(logger->log_level);
+    char *log_lvl_buffer = log_level_to_str(log_level);
 
 
     char log_message_buffer[LOG_MESSAGE_BUFFER_SIZE];
