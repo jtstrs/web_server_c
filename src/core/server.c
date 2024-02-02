@@ -1,15 +1,17 @@
 #include "server.h"
-#include "common.h"
 
-#include "log.h"
+#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
+
 #include "async_context.h"
-#include <netinet/in.h>
-#include <sys/socket.h>
+#include "common.h"
+#include "http_request.h"
+#include "log.h"
 
 #define REQUEST_BUFFER_SIZE 2048
 
@@ -125,7 +127,8 @@ void handle_pending_request(HttpServer *server) {
     int32_t summary_bytes_count = 0;
     int32_t bytes_read = read(peer_sock, request_buffer, REQUEST_BUFFER_SIZE);
 
-    log_message(INFO_LEVEL, "Message content \n%s\n", request_buffer);
+    HttpRequest *request = parse_request(request_buffer);
+
     close(peer_sock);
 }
 
