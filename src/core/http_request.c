@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../containers/list.h"
 #include "log.h"
 
 #define MAX_REQUEST_LINE_SIZE 256
 #define MAX_REQUEST_HEADER_SECTION_SIZE 2048
 #define MAX_HEADER_SIZE 256
+#define MAX_URI_SIZE 256
 #define MAX_HEADER_VALUE_SIZE 256
 
 enum HttpMethod {
@@ -75,10 +77,19 @@ HttpVersion str_to_http_version(char *version_buffer) {
     return UNSUPPORTED_VERSION;
 }
 
+struct HttpHeader {
+    char title[MAX_HEADER_SIZE + 1];
+    char value[MAX_HEADER_VALUE_SIZE + 1];
+};
+
+typedef struct HttpHeader HttpHeader;
+
 struct HttpRequest {
     HttpMethod method;
-    char *uri;
+    char uri[MAX_URI_SIZE + 1];
     HttpVersion version;
+
+    List *headers;
 };
 
 ErrorStatus parse_request_line(HttpRequest *request, char *request_line) {
@@ -128,7 +139,7 @@ ErrorStatus parse_request_line(HttpRequest *request, char *request_line) {
 
     request->method = method;
     request->version = version;
-    request->uri = uri_token;
+    strcpy(request->uri, uri_token);
 
     return Ok;
 }
@@ -140,6 +151,11 @@ ErrorStatus parse_request_header(HttpRequest *request, char *request_headers) {
     static const char header_middle_marker = ':';
     static const char header_end_marker = '\0';
 
+    List *headers_list = create_list(NULL);
+
+    if (!headers_list) {
+        return GenericError;
+    }
 
     for (char *header_line = strtok(request_headers, request_headers_delims); header_line;
          header_line = strtok(NULL, request_headers_delims)) {
@@ -154,8 +170,8 @@ ErrorStatus parse_request_header(HttpRequest *request, char *request_headers) {
             continue;
         }
 
-        char header_buffer[MAX_HEADER_SIZE + 1];
-        memset(header_buffer, 0, MAX_HEADER_SIZE + 1);
+        char header_title_buffer[MAX_HEADER_SIZE + 1];
+        memset(header_title_buffer, 0, MAX_HEADER_SIZE + 1);
 
         // Same as above
         const int32_t header_size = header_middle - header_line - 1;
@@ -165,7 +181,7 @@ ErrorStatus parse_request_header(HttpRequest *request, char *request_headers) {
             continue;
         }
 
-        strncpy(header_buffer, header_line, header_size);
+        strncpy(header_title_buffer, header_line, header_size);
 
         char *header_end = strchr(header_line, header_end_marker);
 
@@ -186,8 +202,15 @@ ErrorStatus parse_request_header(HttpRequest *request, char *request_headers) {
 
         strncpy(header_value_buffer, header_middle, header_value_size);
 
-        printf("[%s]:[%s]\n", header_buffer, header_value_buffer);
+        HttpHeader *header = (HttpHeader *) malloc(sizeof(HttpHeader));
+
+        strcpy(header->title, header_title_buffer);
+        strcpy(header->value, header_value_buffer);
+
+        push_list_item(headers_list, header);
     }
+
+    request->headers = headers_list;
     return Ok;
 }
 
@@ -265,4 +288,11 @@ HttpRequest *parse_request(char *request_buffer) {
     }
 
     return request;
+}
+
+void release_request(HttpRequest *request) {
+    if (request) {
+        release_list(request->headers);
+    }
+    free(request);
 }

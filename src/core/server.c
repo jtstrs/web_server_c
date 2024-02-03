@@ -130,6 +130,8 @@ void handle_pending_request(HttpServer *server) {
     HttpRequest *request = parse_request(request_buffer);
 
     close(peer_sock);
+
+    free(request);
 }
 
 void run(HttpServer *server) {
