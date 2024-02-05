@@ -28,6 +28,33 @@ struct HttpRequest {
     List *headers;
 };
 
+char *http_method_to_str(HttpMethod method) {
+    switch (method) {
+        case OPTIONS:
+            return "OPTIONS";
+        case GET:
+            return "GET";
+        case HEAD:
+            return "HEAD";
+        case POST:
+            return "POST";
+        case PUT:
+            return "PUT";
+        case DELETE:
+            return "DELETE";
+        case TRACE:
+            return "TRACE";
+        case CONNECT:
+            return "CONNECT";
+
+        // Fallthrough
+        case UNSUPPORTED_METHOD:
+        case UNKNOWN_METHOD:
+        default:
+            exit(0);
+    }
+}
+
 HttpMethod str_to_http_method(char *method_buffer) {
     if (strcmp(method_buffer, "OPTIONS") == 0) {
         return OPTIONS;
@@ -69,7 +96,7 @@ char *get_request_uri(HttpRequest *request) {
 
 HttpMethod get_request_method(HttpRequest *request) {
     if (!request) {
-        return NULL;
+        return UNKNOWN_METHOD;
     }
     return request->method;
 }

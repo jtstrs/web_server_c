@@ -39,4 +39,8 @@ HttpRequest *parse_request(char *request_buffer);
 char *get_request_uri(HttpRequest *request);
 HttpMethod get_request_method(HttpRequest *request);
 
+HttpMethod str_to_http_method(char *method_buffer);
+char *http_method_to_str(HttpMethod method);
+
+
 #endif
