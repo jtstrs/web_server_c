@@ -36,7 +36,6 @@ enum HttpVersion {
 enum ErrorStatus {
     Ok,
     MaliciousMethod,
-    UnsupportedMethod,
     UnsupportedVersion,
     GenericError
 };
@@ -47,21 +46,21 @@ typedef enum ErrorStatus ErrorStatus;
 
 HttpMethod str_to_http_method(char *method_buffer) {
     if (strcmp(method_buffer, "OPTIONS") == 0) {
-        return UNSUPPORTED_METHOD;
+        return OPTIONS;
     } else if (strcmp(method_buffer, "GET") == 0) {
         return GET;
     } else if (strcmp(method_buffer, "HEAD") == 0) {
-        return UNSUPPORTED_METHOD;
+        return HEAD;
     } else if (strcmp(method_buffer, "POST") == 0) {
-        return UNSUPPORTED_METHOD;
+        return POST;
     } else if (strcmp(method_buffer, "PUT") == 0) {
-        return UNSUPPORTED_METHOD;
+        return PUT;
     } else if (strcmp(method_buffer, "DELETE") == 0) {
-        return UNSUPPORTED_METHOD;
+        return DELETE;
     } else if (strcmp(method_buffer, "TRACE") == 0) {
-        return UNSUPPORTED_METHOD;
+        return TRACE;
     } else if (strcmp(method_buffer, "CONNECT") == 0) {
-        return UNSUPPORTED_METHOD;
+        return CONNECT;
     }
     return UNKNOWN_METHOD;
 }
@@ -110,10 +109,6 @@ ErrorStatus parse_request_line(HttpRequest *request, char *request_line) {
 
     if (method == UNKNOWN_METHOD) {
         return MaliciousMethod;
-    }
-
-    if (method == UNSUPPORTED_METHOD) {
-        return UnsupportedMethod;
     }
 
     // TODO: Add uri validation
