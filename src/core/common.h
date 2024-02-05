@@ -35,7 +35,7 @@ enum HttpVersion {
     UNSUPPORTED_VERSION
 };
 
-enum HttpStatusCodes {
+enum HttpStatusCode {
     CONTINUE = 100,
     SWITCHING_PROTOCOLS = 101,
     OK = 200,
@@ -75,10 +75,11 @@ enum HttpStatusCodes {
     BAD_GATEWAY = 502,
     SERVICE_UNAVAIABLE = 503,
     GATEWAY_TIME_OUT = 504,
-    HTTP_VERSION_NOT_SUPPORTED = 505
+    HTTP_VERSION_NOT_SUPPORTED = 505,
+    UNKNOWN
 };
 
-typedef enum HttpStatusCodes HttpStatusCodes;
+typedef enum HttpStatusCode HttpStatusCode;
 typedef enum HttpVersion HttpVersion;
 typedef enum HttpMethod HttpMethod;
 
@@ -86,5 +87,8 @@ HttpMethod str_to_http_method(char *method_buffer);
 char *http_method_to_str(HttpMethod method);
 
 HttpVersion str_to_http_version(char *version_buffer);
+char *http_version_to_str(HttpVersion version);
+
+char *http_status_to_str(HttpStatusCode code);
 
 #endif
