@@ -11,10 +11,10 @@
 #include "async_context.h"
 #include "common.h"
 #include "http_request.h"
+#include "http_response.h"
 #include "log.h"
 
 #define REQUEST_BUFFER_SIZE 2048
-
 
 struct HttpServer {
     char host_name[HOST_NAME_LENGTH];
@@ -103,6 +103,10 @@ void init_server(HttpServer *server) {
     server->ac_sock = sock_descr;
 }
 
+int32_t send_buffer_to_client(int32_t client_socket, void *data, size_t buffer_size) {
+    return send(client_socket, data, buffer_size, 0);
+}
+
 int32_t accept_pending_connection(int32_t accept_sock_descr) {
     struct sockaddr_in peer_addr;
     socklen_t peer_addr_size = sizeof(struct sockaddr_in);
@@ -118,6 +122,44 @@ int32_t accept_pending_connection(int32_t accept_sock_descr) {
     return peer_sock;
 }
 
+void handle_bad_request(HttpServer *server, HttpRequest *request, int32_t conn_sock) {
+    HttpResponse *response = (HttpResponse *) malloc(sizeof(HttpResponse));
+
+    if (!response) {
+        return;
+    }
+
+    response->response_headers = NULL;
+    response->code = NOT_IMPLEMENTED;
+    response->version = get_request_version(request);
+    char *response_buffer = serialize_response(response);
+
+    send_buffer_to_client(conn_sock, response_buffer, strlen(response_buffer));
+    free(response);
+}
+
+void handle_request(HttpServer *server, HttpRequest *request, int32_t conn_sock) {
+    if (!request || !server) {
+        return;
+    }
+
+    HttpMethod method = get_request_method(request);
+
+    switch (method) {
+        case GET:
+        case OPTIONS:
+        case HEAD:
+        case POST:
+        case PUT:
+        case DELETE:
+        case TRACE:
+        case CONNECT:
+        default:
+            log_message(INFO_LEVEL, "Method %s is unsupported", http_method_to_str(method));
+            handle_bad_request(server, request, conn_sock);
+    }
+}
+
 void handle_pending_request(HttpServer *server) {
     int32_t peer_sock = accept_pending_connection(server->ac_sock);
 
@@ -129,8 +171,9 @@ void handle_pending_request(HttpServer *server) {
 
     HttpRequest *request = parse_request(request_buffer);
 
-    close(peer_sock);
+    handle_request(server, request, peer_sock);
 
+    close(peer_sock);
     free(request);
 }
 

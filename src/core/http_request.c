@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "../containers/list.h"
+#include "common.h"
 #include "log.h"
 
 #define MAX_REQUEST_LINE_SIZE 256
@@ -34,6 +35,13 @@ char *get_request_uri(HttpRequest *request) {
         return NULL;
     }
     return request->uri;
+}
+
+HttpVersion get_request_version(HttpRequest *request) {
+    if (!request) {
+        return UNSUPPORTED_VERSION;
+    }
+    return request->version;
 }
 
 HttpMethod get_request_method(HttpRequest *request) {
