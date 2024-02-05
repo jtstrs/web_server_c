@@ -13,36 +13,20 @@
 #define MAX_URI_SIZE 256
 #define MAX_HEADER_VALUE_SIZE 256
 
-enum HttpMethod {
-    OPTIONS,
-    GET,
-    HEAD,
-    POST,
-    PUT,
-    DELETE,
-    TRACE,
-    CONNECT,
-    UNSUPPORTED_METHOD,
-    UNKNOWN_METHOD
+struct HttpHeader {
+    char title[MAX_HEADER_SIZE + 1];
+    char value[MAX_HEADER_VALUE_SIZE + 1];
 };
 
-enum HttpVersion {
-    HTTP_1,
-    HTTP_1_1,
-    HTTP_2,
-    UNSUPPORTED_VERSION
-};
+typedef struct HttpHeader HttpHeader;
 
-enum ErrorStatus {
-    Ok,
-    MaliciousMethod,
-    UnsupportedVersion,
-    GenericError
-};
+struct HttpRequest {
+    HttpMethod method;
+    char uri[MAX_URI_SIZE + 1];
+    HttpVersion version;
 
-typedef enum HttpVersion HttpVersion;
-typedef enum HttpMethod HttpMethod;
-typedef enum ErrorStatus ErrorStatus;
+    List *headers;
+};
 
 HttpMethod str_to_http_method(char *method_buffer) {
     if (strcmp(method_buffer, "OPTIONS") == 0) {
@@ -76,20 +60,19 @@ HttpVersion str_to_http_version(char *version_buffer) {
     return UNSUPPORTED_VERSION;
 }
 
-struct HttpHeader {
-    char title[MAX_HEADER_SIZE + 1];
-    char value[MAX_HEADER_VALUE_SIZE + 1];
-};
+char *get_request_uri(HttpRequest *request) {
+    if (!request) {
+        return NULL;
+    }
+    return request->uri;
+}
 
-typedef struct HttpHeader HttpHeader;
-
-struct HttpRequest {
-    HttpMethod method;
-    char uri[MAX_URI_SIZE + 1];
-    HttpVersion version;
-
-    List *headers;
-};
+HttpMethod get_request_method(HttpRequest *request) {
+    if (!request) {
+        return NULL;
+    }
+    return request->method;
+}
 
 ErrorStatus parse_request_line(HttpRequest *request, char *request_line) {
 
