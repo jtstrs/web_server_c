@@ -9,12 +9,14 @@
 #include "stdint.h"
 
 #define REQUEST_BUFFER_SIZE 2048
+#define CONTENT_STORAGE_URI_SIZE 256
 
 typedef struct HttpServer {
-    char host_name[HOST_NAME_LENGTH];
+    char host_name[HOST_NAME_LENGTH + 1];
     int32_t port;
     int32_t ac_sock;
 
+    char content_storage_uri[CONTENT_STORAGE_URI_SIZE + 1];
     AsyncContext *execution_context;
 } HttpServer;
 
