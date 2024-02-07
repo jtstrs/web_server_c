@@ -1,11 +1,38 @@
 #include "http_response.h"
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define MAX_RESPONSE_BUFFER_SIZE 2048
 #define MAX_STATUS_LINE_SIZE 256
 #define MAX_STATUS_CODE_SIZE 4
 #define MAX_REASON_PHRASE_SIZE 128
+
+void delete_header(void *header) {
+    // TODO!!!!
+    exit(1);
+}
+
+HttpResponse *create_response() {
+    HttpResponse *response = (HttpResponse *) malloc(sizeof(HttpResponse));
+
+    if (!response) {
+        return NULL;
+    }
+
+    response->response_headers = create_list(delete_header);
+
+    return response;
+}
+
+void release_response(HttpResponse *response) {
+
+    if (response) {
+        release_list(response->response_headers);
+    }
+    free(response);
+}
 
 char *serialize_status_line(HttpResponse *response) {
     static char status_line[MAX_STATUS_LINE_SIZE + 1];

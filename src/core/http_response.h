@@ -11,6 +11,9 @@ struct HttpResponse {
 };
 
 typedef struct HttpResponse HttpResponse;
+
+HttpResponse *create_response();
+void release_response(HttpResponse *response);
 char *serialize_response(HttpResponse *response);
 
 #endif

@@ -123,7 +123,7 @@ int32_t accept_pending_connection(int32_t accept_sock_descr) {
 }
 
 HttpResponse *create_not_implemented_response(HttpServer *server, HttpRequest *request, int32_t conn_sock) {
-    HttpResponse *response = (HttpResponse *) malloc(sizeof(HttpResponse));
+    HttpResponse *response = create_response();
 
     if (!response) {
         return NULL;
@@ -132,6 +132,16 @@ HttpResponse *create_not_implemented_response(HttpServer *server, HttpRequest *r
     response->response_headers = NULL;
     response->code = NOT_IMPLEMENTED;
     response->version = get_request_version(request);
+
+    return response;
+}
+
+HttpResponse *create_get_response(HttpServer *server, HttpRequest *request, int32_t conn_sock) {
+    HttpResponse *response = create_response();
+
+    if (!response) {
+        return NULL;
+    }
 
     return response;
 }
@@ -165,7 +175,7 @@ void handle_request(HttpServer *server, HttpRequest *request, int32_t conn_sock)
     char *response_buffer = serialize_response(response);
     send_buffer_to_client(conn_sock, response_buffer, strlen(response_buffer));
 
-    free(response);
+    release_response(response);
 }
 
 void handle_pending_request(HttpServer *server) {
