@@ -1,5 +1,6 @@
 #include "server.h"
 
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -129,7 +130,6 @@ HttpResponse *create_not_implemented_response(HttpServer *server, HttpRequest *r
         return NULL;
     }
 
-    response->response_headers = NULL;
     response->code = NOT_IMPLEMENTED;
     response->version = get_request_version(request);
 
@@ -143,6 +143,17 @@ HttpResponse *create_get_response(HttpServer *server, HttpRequest *request, int3
         return NULL;
     }
 
+    int32_t rs_desc = open("tests/resources/index.html", O_RDONLY);
+
+    log_message(DEBUG_LEVEL, "Open requested file. Descriptor: %d", rs_desc);
+
+    if (read(rs_desc, response->response_body, MAX_RESPONSE_BODY_SIZE) == -1) {
+        response->code = NOT_FOUND;
+    } else {
+        response->code = OK;
+    }
+    response->version = get_request_version(request);
+
     return response;
 }
 
@@ -153,9 +164,18 @@ void handle_request(HttpServer *server, HttpRequest *request, int32_t conn_sock)
 
     HttpResponse *response = NULL;
     HttpMethod method = get_request_method(request);
+    char *url = get_request_uri(request);
+
+    if (!url) {
+        log_message(INFO_LEVEL, "Malicious request. Drop.");
+        return;
+    }
 
     switch (method) {
         case GET:
+            log_message(INFO_LEVEL, "GET request %s", url);
+            response = create_get_response(server, request, conn_sock);
+            break;
         case OPTIONS:
         case HEAD:
         case POST:
