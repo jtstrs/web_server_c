@@ -1,7 +1,8 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-struct List;
-void print_list(struct List *list);
+#include "../containers/list.h"
+
+void print_list(List *list);
 
 #endif

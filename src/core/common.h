@@ -15,7 +15,7 @@
 #define BACKLOG_QUEUE 10
 #define HOST_NAME_LENGTH 64
 
-enum HttpMethod {
+typedef enum HttpMethod {
     OPTIONS,
     GET,
     HEAD,
@@ -26,16 +26,16 @@ enum HttpMethod {
     CONNECT,
     UNSUPPORTED_METHOD,
     UNKNOWN_METHOD
-};
+} HttpMethod;
 
-enum HttpVersion {
+typedef enum HttpVersion {
     HTTP_1,
     HTTP_1_1,
     HTTP_2,
     UNSUPPORTED_VERSION
-};
+} HttpVersion;
 
-enum HttpStatusCode {
+typedef enum HttpStatusCode {
     CONTINUE = 100,
     SWITCHING_PROTOCOLS = 101,
     OK = 200,
@@ -77,11 +77,7 @@ enum HttpStatusCode {
     GATEWAY_TIME_OUT = 504,
     HTTP_VERSION_NOT_SUPPORTED = 505,
     UNKNOWN
-};
-
-typedef enum HttpStatusCode HttpStatusCode;
-typedef enum HttpVersion HttpVersion;
-typedef enum HttpMethod HttpMethod;
+} HttpStatusCode;
 
 HttpMethod str_to_http_method(char *method_buffer);
 char *http_method_to_str(HttpMethod method);

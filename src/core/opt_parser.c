@@ -7,26 +7,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-union OptValue {
+typedef union OptValue {
     int32_t iv;
-};
+} OptValue;
 
-enum OptField {
+typedef enum OptField {
     Port,
     LogggingLevel,
     Unknown
-};
+} OptField;
 
-enum ParseStage {
+typedef enum ParseStage {
     WaitForDecl,
     WaitForValue,
     Interrupt
-};
-
-typedef union OptValue OptValue;
-typedef enum OptField OptField;
-typedef enum ParseStage ParseStage;
+} ParseStage;
 
 int32_t parse_int32(char *token) {
     if (!token) {

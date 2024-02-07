@@ -1,23 +1,5 @@
 #include "async_context.h"
-#include "../containers/list.h"
 #include "common.h"
-
-#include <pthread.h>
-#include <stdlib.h>
-#include <string.h>
-
-struct AsyncContext {
-    List *tasks_queue;
-    pthread_t thread_id;
-    pthread_mutex_t mut;
-};
-
-struct AsyncTask {
-    int32_t task_id;
-    void (*task)();
-};
-
-typedef struct AsyncTask AsyncTask;
 
 void execute_task(AsyncTask *task) {
     task->task();

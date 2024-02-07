@@ -5,10 +5,6 @@
 #include <string.h>
 #include <time.h>
 
-#define TIME_BUFFER_SIZE 32
-#define CONTENT_BUFFER_SIZE 256
-#define LOG_MESSAGE_BUFFER_SIZE 512
-
 struct Logger {
     LogLevel log_level;
 } default_logger;

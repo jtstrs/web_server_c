@@ -4,6 +4,10 @@
 #include "../containers/list.h"
 #include "common.h"
 
+#define MAX_RESPONSE_BUFFER_SIZE MAX_RESPONSE_BODY_SIZE + 2048
+#define MAX_STATUS_LINE_SIZE 256
+#define MAX_STATUS_CODE_SIZE 4
+#define MAX_REASON_PHRASE_SIZE 128
 #define MAX_RESPONSE_BODY_SIZE 8192
 
 struct HttpResponse {

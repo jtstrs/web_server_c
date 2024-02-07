@@ -8,27 +8,6 @@
 #include "common.h"
 #include "log.h"
 
-#define MAX_REQUEST_LINE_SIZE 256
-#define MAX_REQUEST_HEADER_SECTION_SIZE 2048
-#define MAX_HEADER_SIZE 256
-#define MAX_URI_SIZE 256
-#define MAX_HEADER_VALUE_SIZE 256
-
-struct HttpHeader {
-    char title[MAX_HEADER_SIZE + 1];
-    char value[MAX_HEADER_VALUE_SIZE + 1];
-};
-
-typedef struct HttpHeader HttpHeader;
-
-struct HttpRequest {
-    HttpMethod method;
-    char uri[MAX_URI_SIZE + 1];
-    HttpVersion version;
-
-    List *headers;
-};
-
 
 char *get_request_uri(HttpRequest *request) {
     if (!request) {

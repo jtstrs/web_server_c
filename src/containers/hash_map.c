@@ -1,27 +1,10 @@
 #include "hash_map.h"
-#include "list.h"
 
 #include <stdint.h>
 #include <stdlib.h>
 
 #define INITIAL_CAPACITY 16
 #define LOAD_FACTOR 0.75
-
-struct Bucket {
-    List *entries;
-};
-typedef struct Bucket Bucket;
-
-struct HashMap {
-    Bucket *buckets;
-    int32_t buckets_count;
-
-    int32_t size;
-
-    HashFunc hash_func;
-    Comparator compare_func;
-    EntryDeleter entry_deleter;
-};
 
 HashMap *create_hash_map(HashFunc hash_func, Comparator comp, EntryDeleter entry_deleter) {
 

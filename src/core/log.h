@@ -4,18 +4,20 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-enum LogLevel {
+#define TIME_BUFFER_SIZE 32
+#define CONTENT_BUFFER_SIZE 256
+#define LOG_MESSAGE_BUFFER_SIZE 512
+
+typedef enum LogLevel {
     DEBUG_LEVEL,
     INFO_LEVEL,
     WARN_LEVEL,
     ERROR_LEVEL,
     FATAL_LEVEL,
     LOG_LEVELS_COUNT
-};
+} LogLevel;
 
-struct Logger;
 typedef struct Logger Logger;
-
 typedef enum LogLevel LogLevel;
 
 void set_accept_log_level(Logger *logger, LogLevel log_level);

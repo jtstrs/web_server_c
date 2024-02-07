@@ -3,12 +3,10 @@
 
 #include <stdint.h>
 
-struct Options {
+typedef struct Options {
     uint32_t port;
     uint32_t logging_level;
-};
-
-typedef struct Options Options;
+} Options;
 
 Options *parse_opts(int32_t argc, char *argv[]);
 

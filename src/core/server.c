@@ -8,24 +8,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-
-#include "async_context.h"
-#include "common.h"
-#include "http_request.h"
-#include "http_response.h"
-#include "log.h"
-
-#define REQUEST_BUFFER_SIZE 2048
-
-struct HttpServer {
-    char host_name[HOST_NAME_LENGTH];
-    int32_t port;
-    int32_t ac_sock;
-
-    AsyncContext *execution_context;
-};
-
-
 HttpServer *create_server(char *host, int32_t port) {
     HttpServer *instance = (HttpServer *) malloc(sizeof(HttpServer));
 
