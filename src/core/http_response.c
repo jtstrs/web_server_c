@@ -23,6 +23,12 @@ HttpResponse *create_response() {
 
     response->response_headers = create_list(delete_header);
 
+    if (!response->response_headers) {
+        free(response);
+        return NULL;
+    }
+    memset(response->response_body, 0, MAX_RESPONSE_BODY_SIZE);
+
     return response;
 }
 
@@ -65,9 +71,8 @@ char *serialize_response(HttpResponse *response) {
 
     char *status_line = serialize_status_line(response);
     char *response_headers = serialize_headers(response);
-    char *response_body = "";
 
     snprintf(response_buffer, MAX_RESPONSE_BUFFER_SIZE, "%s\r\n%s\r\n\r\n%s",
-             status_line, response_headers, response_body);
+             status_line, response_headers, response->response_body);
     return response_buffer;
 }
