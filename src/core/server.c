@@ -122,20 +122,18 @@ int32_t accept_pending_connection(int32_t accept_sock_descr) {
     return peer_sock;
 }
 
-void handle_bad_request(HttpServer *server, HttpRequest *request, int32_t conn_sock) {
+HttpResponse *create_not_implemented_response(HttpServer *server, HttpRequest *request, int32_t conn_sock) {
     HttpResponse *response = (HttpResponse *) malloc(sizeof(HttpResponse));
 
     if (!response) {
-        return;
+        return NULL;
     }
 
     response->response_headers = NULL;
     response->code = NOT_IMPLEMENTED;
     response->version = get_request_version(request);
-    char *response_buffer = serialize_response(response);
 
-    send_buffer_to_client(conn_sock, response_buffer, strlen(response_buffer));
-    free(response);
+    return response;
 }
 
 void handle_request(HttpServer *server, HttpRequest *request, int32_t conn_sock) {
@@ -143,6 +141,7 @@ void handle_request(HttpServer *server, HttpRequest *request, int32_t conn_sock)
         return;
     }
 
+    HttpResponse *response = NULL;
     HttpMethod method = get_request_method(request);
 
     switch (method) {
@@ -156,8 +155,17 @@ void handle_request(HttpServer *server, HttpRequest *request, int32_t conn_sock)
         case CONNECT:
         default:
             log_message(INFO_LEVEL, "Method %s is unsupported", http_method_to_str(method));
-            handle_bad_request(server, request, conn_sock);
+            response = create_not_implemented_response(server, request, conn_sock);
     }
+
+    if (!response) {
+        return;
+    }
+
+    char *response_buffer = serialize_response(response);
+    send_buffer_to_client(conn_sock, response_buffer, strlen(response_buffer));
+
+    free(response);
 }
 
 void handle_pending_request(HttpServer *server) {
