@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define DEFAULT_OPT_PORT 0
+#define DEFAULT_OPT_LOGGING_LEVEL 0
+
 typedef struct Options {
     uint32_t port;
     uint32_t logging_level;

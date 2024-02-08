@@ -1,4 +1,7 @@
 #include "server.h"
+#include "common.h"
+#include "log.h"
+#include "server_config.h"
 
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -8,26 +11,52 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-HttpServer *create_server(char *host, int32_t port) {
-    HttpServer *instance = (HttpServer *) malloc(sizeof(HttpServer));
+int32_t init_from_config(HttpServer *server, ServerConfig *config) {
+    // Probably most of them could have default values???
+    strncpy(server->host_name, config->host, HOST_NAME_LENGTH);
+    server->port = config->port;
+    strncpy(server->content_storage_uri, config->storage_path, HOST_NAME_LENGTH);
 
-    if (!instance) {
-        return NULL;
-    }
+    return 0;
+}
 
-    strcpy(instance->host_name, host);
-
-    instance->port = port;
-    instance->ac_sock = INVALID_DESCRIPTOR;
-
+int32_t init_default(HttpServer *server) {
+    server->ac_sock = INVALID_DESCRIPTOR;
     AsyncContext *ctx = create_async_context();
 
     if (!ctx) {
+        return -1;
+    }
+
+    server->execution_context = ctx;
+    return 0;
+}
+
+HttpServer *create_server(ServerConfig *config) {
+    if (!config) {
+        log_message(ERROR_LEVEL, "Couldnt create server with an empty config");
+        return NULL;
+    }
+
+    HttpServer *instance = (HttpServer *) malloc(sizeof(HttpServer));
+
+    if (!instance) {
+        log_message(ERROR_LEVEL, "Couldnt allocate memory for server instance");
+        return NULL;
+    }
+
+    int32_t initialize_status = init_from_config(instance, config);
+    if (initialize_status == -1) {
         free(instance);
         return NULL;
     }
 
-    instance->execution_context = ctx;
+    initialize_status = init_default(instance);
+    if (initialize_status == -1) {
+        free(instance);
+        return NULL;
+    }
+
     return instance;
 }
 

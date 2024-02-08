@@ -1,12 +1,15 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <stdint.h>
+
+#include "../containers/hash_map.h"
 #include "async_context.h"
 #include "common.h"
 #include "http_request.h"
 #include "http_response.h"
 #include "log.h"
-#include "stdint.h"
+#include "server_config.h"
 
 #define REQUEST_BUFFER_SIZE 2048
 #define CONTENT_STORAGE_URI_SIZE 256
@@ -20,7 +23,7 @@ typedef struct HttpServer {
     AsyncContext *execution_context;
 } HttpServer;
 
-HttpServer *create_server(char *host, int32_t port);
+HttpServer *create_server(ServerConfig *config);
 void release_server(HttpServer *server);
 
 void init_server(HttpServer *server);

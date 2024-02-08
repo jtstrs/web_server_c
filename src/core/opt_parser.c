@@ -1,5 +1,6 @@
 #include "opt_parser.h"
-#include "common.h"
+#include "helpers.h"
+#include "log.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -22,26 +23,6 @@ typedef enum ParseStage {
     WaitForValue,
     Interrupt
 } ParseStage;
-
-int32_t parse_int32(char *token) {
-    if (!token) {
-        return -1;
-    }
-
-    char *endptr;
-
-    int32_t value = (int32_t) strtoul(token, &endptr, 10);
-
-    if (endptr == token) {
-        return -1;
-    }
-
-    if (value < 0 || value >= UINT32_MAX) {
-        return -1;
-    }
-
-    return value;
-}
 
 OptField parse_opt_field(char *token) {
     if (!strcmp("-p", token) || !strcmp("--port", token)) {
@@ -108,16 +89,16 @@ char *opt_field_to_str(OptField opt) {
 }
 
 Options *parse_opts(int32_t argc, char *argv[]) {
+    static Options opts;
+    opts.port = DEFAULT_OPT_PORT;
+    opts.logging_level = DEFAULT_OPT_LOGGING_LEVEL;
+
     if (argc <= 1) {
-        printf("Too small arguments count. Write --help to see available options.\n");
-        exit(0);
+        log_message(DEBUG_LEVEL, "Cli options wasnt provided");
+        return &opts;
     }
 
     char **opt_token = &argv[1];
-
-    static Options opts;
-    opts.port = 0;
-    opts.logging_level = 0;
 
     ParseStage stage = WaitForDecl;
     OptField opt = Unknown;
@@ -163,11 +144,6 @@ Options *parse_opts(int32_t argc, char *argv[]) {
 
     if (stage == Interrupt || stage == WaitForValue) {
         printf("Value for %s option wasnt provied. Abort.", opt_field_to_str(opt));
-        exit(0);
-    }
-
-    if (opts.port == 0) {
-        printf("Mandatory --port option wasnt provided. Abort.");
         exit(0);
     }
 
