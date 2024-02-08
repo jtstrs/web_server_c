@@ -5,6 +5,9 @@
 #include <string.h>
 
 void delete_header(void *header) {
+    if (!header) {
+        return;
+    }
     // TODO!!!!
     exit(1);
 }
@@ -28,7 +31,6 @@ HttpResponse *create_response() {
 }
 
 void release_response(HttpResponse *response) {
-
     if (response) {
         release_list(response->response_headers);
     }
