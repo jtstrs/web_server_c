@@ -1,9 +1,11 @@
 #include "server.h"
 #include "common.h"
+#include "http_request.h"
 #include "log.h"
 #include "server_config.h"
 
 #include <fcntl.h>
+#include <limits.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -134,6 +136,24 @@ int32_t accept_pending_connection(int32_t accept_sock_descr) {
     return peer_sock;
 }
 
+int32_t open_requested_document(HttpServer *server, char *url) {
+    char document_path[PATH_MAX + 1];
+    memset(document_path, 0, PATH_MAX);
+
+    strcat(document_path, server->content_storage_uri);
+    strcat(document_path, url);
+
+    int32_t doc_desc = open(document_path, O_RDONLY);
+
+    if (doc_desc == -1) {
+        log_message(INFO_LEVEL, "Couldnt open document with path %s", document_path);
+    } else {
+        log_message(INFO_LEVEL, "Opened document with path %s", document_path);
+    }
+
+    return doc_desc;
+}
+
 HttpResponse *create_not_implemented_response(HttpServer *server, HttpRequest *request, int32_t conn_sock) {
     HttpResponse *response = create_response();
 
@@ -154,9 +174,7 @@ HttpResponse *create_get_response(HttpServer *server, HttpRequest *request, int3
         return NULL;
     }
 
-    int32_t rs_desc = open("tests/resources/index.html", O_RDONLY);
-
-    log_message(DEBUG_LEVEL, "Open requested file. Descriptor: %d", rs_desc);
+    int32_t rs_desc = open_requested_document(server, get_request_uri(request));
 
     if (read(rs_desc, response->response_body, MAX_RESPONSE_BODY_SIZE) == -1) {
         response->code = NOT_FOUND;
