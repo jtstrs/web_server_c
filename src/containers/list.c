@@ -1,6 +1,5 @@
 #include "list.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 typedef struct ListNode ListNode;
@@ -13,7 +12,7 @@ struct ListNode {
 
 struct List {
     ListNode *head;
-    int32_t size;
+    size_t size;
 
     void (*deleter)(void *);
 };
@@ -56,14 +55,14 @@ void release_list(List *list) {
     free(list);
 }
 
-int32_t get_list_size(List *list) {
+size_t get_list_size(List *list) {
     if (!list) {
         return 0;
     }
     return list->size;
 }
 
-void insert_list_item(List *list, void *data, int32_t position) {
+void insert_list_item(List *list, void *data, size_t position) {
     if (!list) {
         return;
     }
@@ -74,7 +73,7 @@ void insert_list_item(List *list, void *data, int32_t position) {
 
     ListNode *forwarder = list->head;
 
-    for (int32_t index = 0; index < position; ++index) {
+    for (size_t index = 0; index < position; ++index) {
         forwarder = forwarder->next;
     }
 
@@ -143,7 +142,7 @@ void *get_last_list_item(List *list) {
     return forwarder->data;
 }
 
-void *get_list_item(List *list, int32_t position) {
+void *get_list_item(List *list, size_t position) {
     if (!list) {
         return NULL;
     }
@@ -154,14 +153,14 @@ void *get_list_item(List *list, int32_t position) {
 
     ListNode *forwarder = list->head->next;
 
-    for (int32_t index = 0; index < position; ++index) {
+    for (size_t index = 0; index < position; ++index) {
         forwarder = forwarder->next;
     }
 
     return forwarder->data;
 }
 
-void remove_list_item(List *list, int32_t position) {
+void remove_list_item(List *list, size_t position) {
     if (!list) {
         return;
     }
@@ -172,7 +171,7 @@ void remove_list_item(List *list, int32_t position) {
 
     ListNode *forwarder = list->head;
 
-    for (int32_t index = 0; index <= position; ++index) {
+    for (size_t index = 0; index <= position; ++index) {
         forwarder = forwarder->next;
     }
 
