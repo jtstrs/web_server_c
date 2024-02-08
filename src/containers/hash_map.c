@@ -1,4 +1,5 @@
 #include "hash_map.h"
+#include "list.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -62,6 +63,18 @@ int32_t get_entry_position(HashMap *hash_map, void *key, int32_t seed0, int32_t 
     return hash % hash_map->buckets_count;
 }
 
+size_t find_entry_in_bucket(List *bucket_entries, void *key) {
+    size_t bucket_size = get_list_size(bucket_entries);
+
+    for (size_t item_index = 0; item_index < bucket_size; ++item_index) {
+        HashMapEntry *entry = (HashMapEntry *) get_list_item(bucket_entries, item_index);
+        if (entry->key == key) {
+            return item_index;
+        }
+    }
+    return -1;
+}
+
 void insert_hash_map_item(HashMap *hash_map, void *key, void *value) {
     if (!hash_map) {
         return;
@@ -76,8 +89,17 @@ void insert_hash_map_item(HashMap *hash_map, void *key, void *value) {
     entry->key = key;
     entry->value = value;
 
-    const int32_t insert_position = get_entry_position(hash_map, key, 0, 0);
-    push_list_item(hash_map->buckets[insert_position].entries, entry);
+    const size_t bucket_index = get_entry_position(hash_map, key, 0, 0);
+    Bucket *bucket = &hash_map->buckets[bucket_index];
+
+    const size_t item_index = find_entry_in_bucket(bucket->entries, key);
+
+    if (item_index == -1) {
+        push_list_item(key, entry);
+    } else {
+        remove_list_item(bucket->entries, item_index);
+        push_list_item(key, entry);
+    }
 
     hash_map->size++;
 }
@@ -102,6 +124,18 @@ void *get_hash_map_item(HashMap *hash_map, void *key) {
 }
 
 void remove_hash_map_item(HashMap *hash_map, void *key) {
+    if (!hash_map) {
+        return;
+    }
+
+    const size_t bucket_index = get_entry_position(hash_map, key, 0, 0);
+    Bucket *bucket = &hash_map->buckets[bucket_index];
+
+    const size_t item_index = find_entry_in_bucket(bucket->entries, key);
+
+    if (item_index != -1) {
+        remove_list_item(bucket->entries, item_index);
+    }
 }
 
 int32_t get_hash_map_item_count(HashMap *hash_map) {

@@ -16,7 +16,7 @@ typedef struct HashMap {
     Bucket *buckets;
     int32_t buckets_count;
 
-    int32_t size;
+    size_t size;
 
     HashFunc hash_func;
     Comparator compare_func;
