@@ -4,7 +4,6 @@
 #include <stdint.h>
 
 #include "../containers/hash_map.h"
-#include "async_context.h"
 #include "common.h"
 #include "http_request.h"
 #include "http_response.h"
@@ -20,7 +19,6 @@ typedef struct HttpServer {
     int32_t ac_sock;
 
     char content_storage_uri[CONTENT_STORAGE_URI_SIZE + 1];
-    AsyncContext *execution_context;
 } HttpServer;
 
 HttpServer *create_server(ServerConfig *config);

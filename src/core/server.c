@@ -24,13 +24,6 @@ int32_t init_from_config(HttpServer *server, ServerConfig *config) {
 
 int32_t init_default(HttpServer *server) {
     server->ac_sock = INVALID_DESCRIPTOR;
-    AsyncContext *ctx = create_async_context();
-
-    if (!ctx) {
-        return -1;
-    }
-
-    server->execution_context = ctx;
     return 0;
 }
 
@@ -80,7 +73,6 @@ void release_server(HttpServer *server) {
         return;
     }
     release_socket(server->ac_sock);
-    release_async_context(server->execution_context);
     free(server);
 }
 
@@ -245,10 +237,4 @@ void handle_pending_request(HttpServer *server) {
 }
 
 void run(HttpServer *server) {
-    if (!server) {
-        log_message(ERROR_LEVEL, "Server ptr is null");
-        return;
-    }
-    // schedule_task(server->execution_context, handle_pending_request);
-    execute(server->execution_context);
 }
