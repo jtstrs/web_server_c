@@ -68,11 +68,12 @@ ServerConfig *parse_config(char *config_path) {
         memset(line, 0, MAX_CONFIG_LINE_SIZE);
     }
 
-    fclose(conf);
     if (ferror(conf)) {
-        log_message(ERROR_LEVEL, "Couldnt open config file");
+        log_message(ERROR_LEVEL, "Couldnt open config file. Error code: %d", ferror(conf));
         exit(1);
     }
+
+    fclose(conf);
 
     return &server_conf;
 }

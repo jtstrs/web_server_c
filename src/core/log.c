@@ -1,5 +1,6 @@
 #include "log.h"
 
+#include "common.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,7 +72,11 @@ void log_message_impl(const Logger *logger, LogLevel log_level, char *formatted_
     strcat(log_message_buffer, log_lvl_buffer);
     strcat(log_message_buffer, formatted_message);
 
-    printf("%s\n", log_message_buffer);
+    if (log_level == ERROR_LEVEL || log_level == FATAL_LEVEL) {
+        handle_error(log_message_buffer);
+    } else {
+        printf("%s\n", log_message_buffer);
+    }
 }
 
 void log_message_with_logger(const Logger *logger, LogLevel log_level, char *fmt, ...) {
