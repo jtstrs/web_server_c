@@ -26,12 +26,12 @@ int32_t main(int32_t argc, char *argv[]) {
     Options *opts = parse_opts(argc, argv);
     merge_args(srv_conf, opts);
 
+    Logger *logger = get_default_logger();
+    set_accept_log_level(logger, opts->logging_level);
+
     HttpServer *server = create_server(srv_conf);
     init_server(server);
-
-    while (server && ALWAYS) {
-        handle_pending_request(server);
-    }
+    run(server);
     release_server(server);
 
     return 0;

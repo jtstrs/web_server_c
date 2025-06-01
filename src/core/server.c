@@ -7,11 +7,25 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <netinet/in.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+#define MAX_EVENTS 1024
+
+typedef struct HttpServer {
+    char host_name[HOST_NAME_LENGTH + 1];
+    int32_t port;
+    int32_t ac_sock;
+
+    int32_t efd;
+
+    char content_storage_uri[CONTENT_STORAGE_URI_SIZE + 1];
+} HttpServer;
 
 int32_t init_from_config(HttpServer *server, ServerConfig *config) {
     // Probably most of them could have default values???
@@ -219,9 +233,7 @@ void handle_request(HttpServer *server, HttpRequest *request, int32_t conn_sock)
     release_response(response);
 }
 
-void handle_pending_request(HttpServer *server) {
-    int32_t peer_sock = accept_pending_connection(server->ac_sock);
-
+void handle_pending_request(HttpServer *server, int32_t peer_sock) {
     char request_buffer[REQUEST_BUFFER_SIZE + 1];
     memset(request_buffer, 0, REQUEST_BUFFER_SIZE);
 
@@ -237,4 +249,47 @@ void handle_pending_request(HttpServer *server) {
 }
 
 void run(HttpServer *server) {
+    if (!server) {
+        return;
+    }
+
+    server->efd = epoll_create1(0);
+
+    if (server->efd == -1) {
+        handle_error("epoll_create1");
+    }
+
+    struct epoll_event ev;
+    ev.data.fd = server->ac_sock;
+    ev.events = EPOLLIN | EPOLLET;
+    log_message(DEBUG_LEVEL, "Adding socket %d to epoll", server->ac_sock);
+
+    if (epoll_ctl(server->efd, EPOLL_CTL_ADD, server->ac_sock, &ev) == -1) {
+        handle_error("epoll_ctl");
+    }
+
+    struct epoll_event events[MAX_EVENTS];
+
+    while (ALWAYS) {
+        int32_t event_count = epoll_wait(server->efd, events, MAX_EVENTS, -1);
+
+        if (event_count == -1) {
+            handle_error("epoll_wait");
+        }
+
+        for (int32_t index = 0; index < event_count; ++index) {
+            struct epoll_event *event = &events[index];
+            int32_t socket_descriptor = event->data.fd;
+            int32_t is_accept_socket = socket_descriptor == server->ac_sock;
+            if (is_accept_socket) {
+                int32_t peer_sock = accept_pending_connection(socket_descriptor);
+                struct epoll_event peer_sock_event;
+                peer_sock_event.data.fd = peer_sock;
+                peer_sock_event.events = EPOLLIN | EPOLLET;
+                epoll_ctl(server->efd, EPOLL_CTL_ADD, peer_sock, &peer_sock_event);
+            } else {
+                handle_pending_request(server, socket_descriptor);
+            }
+        }
+    }
 }

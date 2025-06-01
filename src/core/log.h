@@ -21,6 +21,7 @@ typedef struct Logger Logger;
 typedef enum LogLevel LogLevel;
 
 void set_accept_log_level(Logger *logger, LogLevel log_level);
+Logger *get_default_logger();
 
 void log_message_with_logger(const Logger *logger, LogLevel log_level, char *fmt, ...);
 void log_message(LogLevel log_level, char *fmt, ...);

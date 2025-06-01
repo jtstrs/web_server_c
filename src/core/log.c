@@ -21,6 +21,10 @@ void set_accept_log_level(Logger *logger, LogLevel log_lvl) {
     logger->log_level = log_lvl;
 }
 
+Logger *get_default_logger() {
+    return &default_logger;
+}
+
 char *log_level_to_str(LogLevel log_level) {
     switch (log_level) {
         case DEBUG_LEVEL:
